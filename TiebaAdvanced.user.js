@@ -10,7 +10,7 @@
 // @downloadURL	https://userscripts.org/scripts/source/152918.user.js
 // @include	http://tieba.baidu.com/*
 // @exclude	http://tieba.baidu.com/tb/*
-// @require	https://userscripts.org/scripts/source/156795.user.js
+// @require	https://raw.github.com/gera2ld/UserJS/master/TiebaCommon.min.user.js
 // @require	https://userscripts.org/scripts/source/153247.user.js
 // ==/UserScript==
 
