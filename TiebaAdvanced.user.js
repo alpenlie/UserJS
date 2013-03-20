@@ -10,8 +10,8 @@
 // @downloadURL	https://userscripts.org/scripts/source/152918.user.js
 // @include	http://tieba.baidu.com/*
 // @exclude	http://tieba.baidu.com/tb/*
-// @require	https://raw.github.com/gera2ld/UserJS/master/TiebaCommon.min.user.js
-// @require	https://raw.github.com/gera2ld/UserJS/master/TiebaBlockedWords.user.js
+// @require	https://raw.github.com/gera2ld/UserJS/master/lib/TiebaCommon.min.user.js
+// @require	https://raw.github.com/gera2ld/UserJS/master/lib/TiebaBlockedWords.user.js
 // ==/UserScript==
 
 // 提醒页面强制解码
