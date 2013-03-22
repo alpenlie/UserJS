@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.7.6
+// @version	2.5.7.7
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -53,7 +53,8 @@ var mask=$('<div class=ge_mask>').appendTo('body');	// Mask layer
 var lzl_buttons=[],lzl_styles=[],lzl_filters=[],lzl_efilters=[],lzl_init=[],lzl_fix=[]; // 新增楼中楼按钮
 utils.addPButton=function(o,c,m,a) {
 	lzl_styles=lzl_styles.concat(c);o.addClass(c[0]);
-	lzl_buttons.push([o,m,a||{after:'.lzl_panel_submit'}]);
+	if(!a) a={};if(!a.after) a.after='.lzl_panel_submit';
+	lzl_buttons.push([o,m,a]);
 	return o;
 };
 
@@ -365,7 +366,7 @@ function initCall() {
 		unsafeWindow.LzlEditor._s_p._submitData=submitData;
 	});
 	var o=$('<span title="召唤" unselectable="on"></span>'),j=$('#j_p_postlist'),p=utils.addPopup(j,null,loadLists);
-	utils.addPButton(o,['lzl_panel_call'],p.ontoggle);
+	utils.addPButton(o,['lzl_panel_call'],p.ontoggle,{keys:['click']});
 }
 // 蓝字支持
 function initFontBlue() {
