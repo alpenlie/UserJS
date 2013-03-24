@@ -451,9 +451,11 @@ function initOverlay() {
 		} else t.html('');
 	}
 	// 普通弹窗
-	utils.hook(unsafeWindow.TED.Overlay.prototype,'open',null,function(){
+	//utils.hook(unsafeWindow.TED.Overlay.prototype,'open',null,function(){		// 所有弹窗：包括楼中楼
+	utils.hook(unsafeWindow.rich_postor._editor.overlay,'open',null,function(){		// 仅主输入框的弹窗
 		if(this.isOpen) fixLocation($(this.holder));
 	});
+	utils.hook(unsafeWindow.TED.Overlay.prototype,'close',null,function(){t.html('');});
 	// 涂鸦窗口
 	utils.hook(unsafeWindow.TED.Editor.prototype,'toolbarcmd_picasso',null,function(){
 		if(this.overlay.isOpen) {
