@@ -203,10 +203,11 @@ function initAddWater() {
 		unsafeWindow.rich_postor._editor.editArea.innerHTML=getItem(water,$('#waterIndex'));
 		unsafeWindow.rich_postor._submit();
 	});
+	var tailed=false;
 	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',function(){
 		var e=this.editArea,t=getItem(tails,$('#tailIndex'));
-		if(!$('#useTail').prop('checked')||!t||$(e).find('#ge_tail').appendTo(e).length) return;
-		e.innerHTML+='<br><br><div id=ge_tail>'+t+'</div>';
+		if(!$('#useTail').prop('checked')||!t||tailed) return;
+		e.innerHTML+='<br><br>'+t;tailed=true;
 	});
 	initTails();initWater();
 }
