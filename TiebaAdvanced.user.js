@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.7.7
+// @version	2.5.7.8
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -80,8 +80,8 @@ function initForeColors() {
 // 初始化贴子管理面板
 function initPostManager() {
 	if(utils.postManager) return;
-	utils.addStyle('.tmedit{border:1px solid;overflow:auto;}.fleft{float:left;}.fright{float:right;}');
-	var tm=$('<div id=tailManager style="position:fixed;display:none;left:100px;right:100px;background:lightgray;color:#333;padding:20px;border:2px solid #ccc;border-radius:20px;shadow:0 1px 5px #333;z-index:999;}">').appendTo('body');
+	utils.addStyle('.tmedit{border:1px solid;overflow:auto;background:transparent;}.fleft{float:left;}.fright{float:right;}');
+	var tm=$('<div style="position:fixed;display:none;left:100px;right:100px;background:lightgray;color:#333;padding:20px;border:2px solid #ccc;border-radius:20px;shadow:0 1px 5px #333;z-index:999;}">').appendTo('body');
 	tm.listItems=function(t,e,x,s){
 		var d=[];
 		if(x) d.push('<option>'+x+'</option>');
@@ -101,61 +101,67 @@ function initPostManager() {
 		$(ti).prop('selectedIndex',tm.list.last);
 		editItem();
 	};
+	function text(o,t){
+		if(o[0]) o=o[0];
+		var k='innerText' in o?'innerText':'textContent';
+		if(typeof t=='string') o[k]=t;
+		else return o[k];
+	}
+	var p=document.createElement('p');
 	function editItem(e) {
 		if(e) tm.list.load(ti.prop('selectedIndex'),1);
 		var t=tm.list.cur;
-		$('#tmContent').prop('disabled',!t);
+		tc.prop('disabled',!t);
 		if(!t) t={type:'s',data:''};
-		$('#tmType').val(t.type);
-		if(t.type=='j'||t.type=='h') $('#tmContent').text(t.data);
-		else $('#tmContent').html(t.data);
+		tt.val(t.type);
+		if(t.type=='j'||t.type=='h') tc.val(t.data);
+		else {p.innerHTML=t.data;tc.val(text(p));}
 		liveShow();
 	}
 	function saveItem(e) {
 		var t=tm.list.cur;if(!t) return;
-		t.type=$('#tmType').val();
-		if(t.type=='j') try{eval(t.data=$('#tmContent').text());}catch(e){return;}
-		else if(t.type=='h') t.data=$('#tmContent').text();
-		else t.data=$('#tmContent').html();
+		t.type=tt.val();
+		if(t.type=='j') try{eval(t.data=tc.val());}catch(e){return;}
+		else if(t.type=='h') t.data=tc.val();
+		else {text(p,tc.val());t.data=p.innerHTML;}
 	}
 	function liveShow(e) {
-		var t=$('#tmType').val(),s;
-		if(t=='j') try{s=eval($('#tmContent').text());}catch(e){s='<font color=red>JS代码有误！</font>';}
-		else if(t=='h') s=$('#tmContent').text();
-		else s=$('#tmContent').html();
-		$('#tmView').html(s);
+		var t=tt.val(),s;
+		if(t=='j') try{s=eval(tc.val());}catch(e){s='<font color=red>JS代码有误！</font>';}
+		else s=tc.val();
+		if(t=='s') text(tv,s); else tv.html(s);
 	}
 	tm.loadPanel=function(t,n,c) {
-		tm.list=t;$('#tmName').text(n);tm.callback=c;
-		last=$('#tailIndex').prop('selectedIndex');
+		tm.list=t;tn.text(n);tm.callback=c;
 		tm.listItems(t,ti);editItem(1);
 		mask.fadeIn('fast',function() {
-			$('#tailManager').css({top:innerHeight+'px',display:'block'}).animate({top:'100px',bottom:'20px'},300,function(){
+			tm.css({top:innerHeight+'px',display:'block'}).animate({top:'100px',bottom:'20px'},300,function(){
 				$('.tmedit').height($(this).height()-60).width($(this).width()/2-20);
 			});
 		});
 	};
-	var tl=$('<div class=fleft>').appendTo(tm).html('<strong id=tmName class=ge_rsep></strong>');
-	var ti=$('<select id=tmIndex>').appendTo(tl).change(editItem);
+	var tl=$('<div class=fleft>').appendTo(tm),
+			tn=$('<strong class=ge_rsep>').appendTo(tl),
+			ti=$('<select>').appendTo(tl).change(editItem);
 	$('<span class="ge_sbtn ge_rsep">改名</span>').appendTo(tl).click(function(e) {
 		if(!tm.list.cur) return;
 		var t=prompt('修改名称：',tm.list.cur.name);
 		if(t) {tm.list.cur.name=t;ti.children('option:eq('+tm.list.last+')').text(t);}
 	});
-	$('<select id=tmType>').appendTo($('<label for=tmType>类型：</label>').appendTo(tl)).html('<option value="s" checked>普通字串</option><option value="h">HTML代码</option><option value="j">JS代码</option>').change(function(){liveShow();saveItem();});
+	var tt=$('<select>').appendTo($('<label>类型：</label>').appendTo(tl)).html('<option value="s" checked>普通字串</option><option value="h">HTML代码</option><option value="j">JS代码</option>').change(function(){liveShow();saveItem();});
 	var tr=$('<div class=fright></div>').appendTo(tm);
 	$('<span class=ge_sbtn>添加</span>').appendTo(tr).click(tm.newItem);
 	$('<span class=ge_sbtn>删除</span>').appendTo(tr).click(function() {
-		//if(tm.list.length==1) return;	// 仅剩一条时不能删除
 		var l=tm.list.last;tm.list.pop(l);editItem();ti.children().eq(l).remove();
 	});
 	$('<span class=ge_sbtn>关闭</span>').appendTo(tr).click(function() {
 		tm.list.save();if(tm.callback) tm.callback();
-		$('#tailManager').animate({top:innerHeight+'px'},300,function() {$(this).hide();mask.fadeOut('fast');});
+		tm.animate({top:innerHeight+'px'},300,function() {$(this).hide();mask.fadeOut('fast');});
 	});
 	$('<div class=x></div><div><label class=fleft>编辑框</label><label class=fright>预览框</label></div><div class=x></div>').appendTo(tm);
-	$('<div contentEditable=true id=tmContent class="tmedit fleft">').appendTo(tm).blur(saveItem).keyup(liveShow).mouseup(liveShow);
-	$('<div id=tmView class="tmedit fright"></div><div class=x></div>').appendTo(tm);
+	var tc=$('<textarea class="tmedit fleft">').appendTo(tm).blur(saveItem).keyup(liveShow).mouseup(liveShow);
+	var tv=$('<div class="tmedit fright">').appendTo(tm);
+	$('<div class=x>').appendTo(tm);
 	utils.postManager=tm;
 }
 // 灌水：原尾巴功能
@@ -167,8 +173,8 @@ function initAddWater() {
 	]).load(),water=utils.list('water',null,function(){return {type:'s',data:'',name:'新水贴'};},[
 		{type:'s',name:'打酱油',data:'我是打酱油的~'},
 	]).load();
-	function initTails(){utils.postManager.listItems(tails,$('#tailIndex'),'随机',utils.getObj('tailindex',1));}
-	function initWater(){utils.postManager.listItems(water,$('#waterIndex'),'随机',utils.getObj('waterindex',0));}
+	function initTails(){utils.postManager.listItems(tails,ti,'随机',utils.getObj('tailindex',1));}
+	function initWater(){utils.postManager.listItems(water,wi,'随机',utils.getObj('waterindex',0));}
 	function getItem(t,s){
 		var l=s.prop('selectedIndex'),L=t.length;if(!L) return;
 		if(!l) l=Math.floor(Math.random()*L); else l--;
@@ -176,20 +182,19 @@ function initAddWater() {
 		if(t.list[l].type=='j') d=eval(d);
 		return d;
 	}
-	var op=utils.addPopup($('#edit_parent'),utils.addSButton('灌水')),last;
+	var op=utils.addPopup($('#edit_parent'),utils.addSButton('灌水'));
 	$('<div class=ge_sbtn style="cursor:default">智能灌水</div>').appendTo(op);
-	$('<select id=tailIndex class=ge_rsep>').appendTo($('<label for=tailIndex>尾巴：</label>').appendTo(op)).change(function(e){utils.setObj('tailindex',this.selectedIndex);});
+	var ti=$('<select class=ge_rsep>').appendTo($('<label>尾巴：</label>').appendTo(op)).change(function(e){utils.setObj('tailindex',this.selectedIndex);});
 	$('<span class=ge_sbtn>管理</span>').appendTo(op).click(function(e){utils.postManager.loadPanel(tails,'尾巴管理',initTails);});
 	$('<br>').appendTo(op);
-	utils.bindProp($('<input type=checkbox id=useTail>').appendTo(op),'checked','usetail',true);
-	$('<label for=useTail class=ge_rsep>自动附加尾巴</label>').appendTo(op);
+	var tail=utils.bindProp($('<input type=checkbox>').prependTo($('<label class=ge_rsep>自动附加尾巴</label>').appendTo(op)),'checked','usetail',true);
 	$('<br>').appendTo(op);
 	$('<span class=ge_sbtn>').html('存为新尾巴').appendTo(op).click(function(e){
 		utils.postManager.loadPanel(tails,'尾巴管理',initTails);
 		utils.postManager.newItem(e,{type:'h',name:'新尾巴',data:unsafeWindow.rich_postor._editor.editArea.innerHTML});
 	});
 	$('<hr>').appendTo(op);
-	$('<select id=waterIndex class=ge_rsep>').appendTo($('<label for=waterIndex>水贴：</label>').appendTo(op)).change(function(e){utils.setObj('waterindex',this.selectedIndex);});
+	var wi=$('<select class=ge_rsep>').appendTo($('<label>水贴：</label>').appendTo(op)).change(function(e){utils.setObj('waterindex',this.selectedIndex);});
 	$('<span class=ge_sbtn>管理</span>').appendTo(op).click(function(e){utils.postManager.loadPanel(water,'水贴管理',initWater);});
 	$('<br>').appendTo(op);
 	$('<span class=ge_sbtn>').html('存为新水贴').appendTo(op).click(function(e){
@@ -197,16 +202,16 @@ function initAddWater() {
 		utils.postManager.newItem(e,{type:'h',name:'新水贴',data:unsafeWindow.rich_postor._editor.editArea.innerHTML});
 	});
 	$('<span class=ge_sbtn>').html('载入').appendTo(op).click(function(e){
-		unsafeWindow.rich_postor._editor.execCommand('inserthtml',getItem(water,$('#waterIndex')));
+		unsafeWindow.rich_postor._editor.execCommand('inserthtml',getItem(water,wi));
 	});
 	$('<span class=ge_sbtn>').html('发表').appendTo(op).click(function(e){
-		unsafeWindow.rich_postor._editor.editArea.innerHTML=getItem(water,$('#waterIndex'));
+		unsafeWindow.rich_postor._editor.editArea.innerHTML=getItem(water,wi);
 		unsafeWindow.rich_postor._submit();
 	});
 	var tailed=false;
 	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',function(){
-		var e=this.editArea,t=getItem(tails,$('#tailIndex'));
-		if(!$('#useTail').prop('checked')||!t||tailed) return;
+		var e=this.editArea,t=getItem(tails,ti);
+		if(!tail.prop('checked')||!t||tailed) return;
 		e.innerHTML+='<br><br>'+t;tailed=true;
 	});
 	initTails();initWater();
