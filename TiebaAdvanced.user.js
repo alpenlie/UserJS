@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.7.8
+// @version	2.5.8
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -374,6 +374,30 @@ function initCall() {
 	var o=$('<span title="召唤" unselectable="on"></span>'),j=$('#j_p_postlist'),p=utils.addPopup(j,null,loadLists);
 	utils.addPButton(o,['lzl_panel_call'],p.ontoggle,{keys:['click']});
 }
+
+// 初始化实体编码
+function initEntity(){
+	function encode(v) {
+		var d;
+		//plane 1-14 (\u10000-\ueffff), 0x2400=-0xDC00+0x10000, UserScript#150073
+		if(v[1]) d=((v.charCodeAt(0)-0xd800)<<10)+v.charCodeAt(1)+0x2400;
+		else d=v.charCodeAt();
+		v='x'+d.toString(16);
+		if(/8964/.test(v)) v=d.toString();	// WTF!
+		return '&#'+v+'&#59;;';
+	}
+	utils.entity=function(e,t){
+		//characters in CJK Unified Ideographs original set (4E00-9FFF) that are forced to be converted to simplified Chinese characters; plus characters in all plane 0 CJK blocks that are improperly converted to other characters
+		t='&[^;]+;|('+(t?t+'|':'')+'[\ud800-\udb7f][\udc00-\udfff])';
+		t=new RegExp(t,'g');
+		return e.replace(/(^|>)([^<]*)/g,function(v,g1,g2){	// strip tags
+			return g1+g2.replace(t,function(v,g){
+				if(g) return g.replace(/./g,encode);
+				return v;
+			});
+		});
+	};
+}
 // 蓝字支持
 function initFontBlue() {
 	function switchBlue(e) {utils.switchColor('rgb(38,28,220)',utils.colors.blue);}
@@ -405,7 +429,7 @@ function initFontBlue() {
 	utils.addPButton($('<span title="灰字" unselectable="on"></span>'),['lzl_panel_gray'],switchGray);
 }*/
 // 字符实体支持，繁体支持
-function initEntity() {
+function initUnicode() {
 	utils.addStyle('\
 .tb-editor-toolbar .html_char,.lzl_html_char,.tb-editor-toolbar .html_entity,.lzl_html_entity{background:url("'+utils.purl+'") no-repeat scroll transparent;height:20px;width:22px;}\
 .tb-editor-toolbar .html_char,.tb-editor-toolbar .html_entity{margin-left:3px;margin-top:12px;padding-left:0;}\
@@ -414,8 +438,9 @@ function initEntity() {
 ');
 	function switchCoding(e) {
 		if(e.target) {e=e.target;e.val=e.val=='e'?'c':'e';utils.setObj(e.key,e.val);}
-		e.className=e.class[e.val];e.setAttribute('title',title[e.val]);
+		e.className=e.class[e.val];e.setAttribute('title',switchCoding.title[e.val]);
 	}
+	switchCoding.title={e:'所有CJK字符实体编码',c:'仅对字库（繁体字等）中字符实体编码'};
 	var r=new RegExp('^([\\w'+utils.cjk+']+ )(.*)','gim');
 	function fixEntities(e) {
 		var t=this===unsafeWindow.rich_postor._editor?u[0]:l[0];
@@ -428,7 +453,6 @@ function initEntity() {
 		e=s.join('@');
 		return e;
 	}
-	var title={e:'所有CJK字符实体编码',c:'仅对字库（繁体字等）中字符实体编码'};
 	// 主编辑框
 	var u=$('<span unselectable="on">');utils.addTButton(u,switchCoding);
 	u[0].key='code';u[0].val=utils.getObj(u[0].key,'c');u[0].class={e:'html_entity',c:'html_char'};switchCoding(u[0]);
@@ -438,6 +462,7 @@ function initEntity() {
 	l[0].key='lcode';l[0].val=utils.getObj(l[0].key,'c');l[0].class={e:'lzl_html_entity',c:'lzl_html_char'};switchCoding(l[0]);
 	lzl_filters.push(fixEntities);
 }
+
 // 修复楼中楼定位翻页
 function initLzlFix() {
 	$('li.lzl_li_pager').each(function(i,e){
@@ -532,11 +557,12 @@ if(PageData.user.is_login) {
 		initForeColors();		//初始化：字体颜色
 		initAddWater();			// 灌水+尾巴
 		initCall();			// 召唤增强，召唤列表
+		initEntity();		// 初始化：实体编码
 		initFontBlue();			// 蓝字支持
 		//initFontGray();			// 灰字支持
-		initEntity();			// 字符实体支持，繁体支持
+		initUnicode();			// Unicode编码支持
 		initOverlay();			// 优化弹窗
-		utils.notice(1,'蓝字短暂复出，请大家抓紧享用。\n　　　　　　　　——Gerald <gera2ld@163.com>');
+		utils.notice(2,'Unicode编码已修复。\n　　　　　　　　——Gerald <gera2ld@163.com>');
 	}
 	if(unsafeWindow.LzlEditor) {	// 最后初始化楼中楼，使楼中楼支持以上功能
 		initLzL();		//初始化：支持已加载的功能
