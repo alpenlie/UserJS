@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.8
+// @version	2.5.8.1
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -382,7 +382,7 @@ function initEntity(){
 		//plane 1-14 (\u10000-\ueffff), 0x2400=-0xDC00+0x10000, UserScript#150073
 		if(v[1]) d=((v.charCodeAt(0)-0xd800)<<10)+v.charCodeAt(1)+0x2400;
 		else d=v.charCodeAt();
-		v='x'+d.toString(16);
+		v='x'+(d+65536).toString(16).substr(1);
 		if(/8964/.test(v)) v=d.toString();	// WTF!
 		return '&#'+v+'&#59;;';
 	}
@@ -436,11 +436,12 @@ function initUnicode() {
 .tb-editor-toolbar .html_char,.lzl_html_char{background-position:-44px 0}\
 .tb-editor-toolbar .html_entity,.lzl_html_entity{background-position:-66px 0}\
 ');
-	function switchCoding(e) {
-		if(e.target) {e=e.target;e.val=e.val=='e'?'c':'e';utils.setObj(e.key,e.val);}
-		e.className=e.class[e.val];e.setAttribute('title',switchCoding.title[e.val]);
+	function switchCoding(key,cls,e){
+		function update(e){e.className=cls[val];e.setAttribute('title',title[val]);}
+		var val=utils.getObj(key,'c');update(e);
+		return function(e) {e=e.target;val=val=='e'?'c':'e';utils.setObj(key,val);update(e);};
 	}
-	switchCoding.title={e:'所有CJK字符实体编码',c:'仅对字库（繁体字等）中字符实体编码'};
+	title={e:'所有CJK字符实体编码',c:'仅对字库（繁体字等）中字符实体编码'};
 	var r=new RegExp('^([\\w'+utils.cjk+']+ )(.*)','gim');
 	function fixEntities(e) {
 		var t=this===unsafeWindow.rich_postor._editor?u[0]:l[0];
@@ -454,12 +455,12 @@ function initUnicode() {
 		return e;
 	}
 	// 主编辑框
-	var u=$('<span unselectable="on">');utils.addTButton(u,switchCoding);
-	u[0].key='code';u[0].val=utils.getObj(u[0].key,'c');u[0].class={e:'html_entity',c:'html_char'};switchCoding(u[0]);
+	var u=$('<span unselectable="on">');
+	utils.addTButton(u,switchCoding('code',{e:'html_entity',c:'html_char'},u[0]));
 	utils.hook(unsafeWindow.rich_postor._editor,'getHtml',null,fixEntities);
 	// 楼中楼
-	var l=$('<span unselectable="on">');utils.addPButton(l,['lzl_html_char','lzl_html_entity'],switchCoding);
-	l[0].key='lcode';l[0].val=utils.getObj(l[0].key,'c');l[0].class={e:'lzl_html_entity',c:'lzl_html_char'};switchCoding(l[0]);
+	var l=$('<span unselectable="on">');
+	utils.addPButton(l,['lzl_html_char','lzl_html_entity'],switchCoding('lcode',{e:'lzl_html_entity',c:'lzl_html_char'},l[0]));
 	lzl_filters.push(fixEntities);
 }
 
@@ -476,7 +477,7 @@ function initOverlay() {
 		var f=H.offset(),h=H.height();
 		if(f.top+h>pageYOffset+innerHeight) {	// 向上弹出
 			H.css({top:'auto',bottom:H.parent().height()-H.position().top+40});
-			t.html('.tb-editor-overlay .arrow{top:auto !important;bottom:-8px !important;transform:scale(-1);}');
+			t.html('.tb-editor-overlay .arrow{top:auto !important;bottom:-8px !important;transform:scale(-1);-webkit-transform:scale(-1);}');
 			return true;
 		} else t.html('');
 	}
