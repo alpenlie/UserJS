@@ -60,7 +60,7 @@ utils.addPButton=function(o,c,m,a) {
 
 // 字体颜色初始化
 function initForeColors() {
-	utils.colors={blue:'#261cdc',/*gray:'#cccccc',*/red:'#e10602'};
+	utils.colors={blue:'#261cdc',red:'#e10602'};
 	utils.switchColor=function(cr,cs) {
 		document.execCommand('forecolor',false,document.queryCommandValue('forecolor').replace(/\s/g,'')==cr?'#333333':cs);
 	}
@@ -69,7 +69,6 @@ function initForeColors() {
 		e.innerHTML=e.innerHTML.replace(/<font color="(.*?)">(.*?)<\/font>/gi,function(v,g1,g2){
 			if(g1==utils.colors.red) return '<span class="edit_font_color">'+g2+'</span>';
 			else if(g1==utils.colors.blue) return '<a>'+g2+'</a>';
-			//else if(g1==utils.colors.gray) return '<span class="apc_src_wrapper">'+g2+'</span>';
 			else return v;
 		});
 	}
@@ -406,7 +405,7 @@ function initFontBlue() {
 			if(!g1.length) return '';
 			v=g1=utils.entity(g1,'.');
 			if(!/^\w+:\/\//.test(v)) v='http://'+v;
-			return '<a href="'+v+'" target="_blank" style="color:red">'+g1+'</a>';
+			return '<a href="'+v+'" target="_blank">'+g1+'</a>';
 		});
 		return e;
 	}
@@ -419,15 +418,6 @@ function initFontBlue() {
 	lzl_filters.push(fixBlue);
 	utils.addPButton($('<span title="链接蓝字" unselectable="on"></span>'),['lzl_panel_blue'],switchBlue);
 }
-// 灰字支持
-/*function initFontGray() {
-	function switchGray(e) {utils.switchColor('rgb(204,204,204)',utils.colors.gray);}
-	utils.addStyle('.tb-editor-toolbar .font_gray,.lzl_panel_gray{background:url("'+utils.purl+'") no-repeat scroll -22px 0 transparent;height:20px;width:22px;}.tb-editor-toolbar .font_gray{margin-left:3px;margin-top:12px;padding-left:0;}');
-	// 主编辑框
-	utils.addTButton($("<span class='font_gray' title='灰字' unselectable='on'></span>"),switchGray);
-	// 楼中楼
-	utils.addPButton($('<span title="灰字" unselectable="on"></span>'),['lzl_panel_gray'],switchGray);
-}*/
 // 字符实体支持，繁体支持
 function initUnicode() {
 	utils.addStyle('\
@@ -559,8 +549,7 @@ if(PageData.user.is_login) {
 		initAddWater();			// 灌水+尾巴
 		initCall();			// 召唤增强，召唤列表
 		initEntity();		// 初始化：实体编码
-		initFontBlue();			// 蓝字支持
-		//initFontGray();			// 灰字支持
+		//initFontBlue();			// 蓝字支持
 		initUnicode();			// Unicode编码支持
 		initOverlay();			// 优化弹窗
 		utils.notice(2,'Unicode编码已修复。\n　　　　　　　　——Gerald <gera2ld@163.com>');
