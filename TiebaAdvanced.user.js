@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.8.3
+// @version	2.5.8.4
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -181,7 +181,7 @@ function initAddWater() {
 		if(t.list[l].type=='j') d=eval(d);
 		return d;
 	}
-	var op=utils.addPopup($('#edit_parent'),utils.addSButton('灌水'));
+	var op=utils.addPopup($('#edit_parent'),utils.addSButton('灌水')).panel;
 	$('<div class=ge_sbtn style="cursor:default">智能灌水</div>').appendTo(op);
 	var ti=$('<select class=ge_rsep>').appendTo($('<label>尾巴：</label>').appendTo(op)).change(function(e){utils.setObj('tailindex',this.selectedIndex);});
 	$('<span class=ge_sbtn>管理</span>').appendTo(op).click(function(e){utils.postManager.loadPanel(tails,'尾巴管理',initTails);});
@@ -273,6 +273,7 @@ function initCall() {
 			e.preventDefault();
 			e=e.target;if(e.tagName=='A') $(e).toggleClass('selected');
 		}).dblclick(function(e){
+			e.stopPropagation();
 			var s=window.getSelection();
 			if(!s.rangeCount) return;
 			var r=s.getRangeAt(0),c=r.startContainer,k=r.startOffset;
@@ -370,8 +371,8 @@ function initCall() {
 	lzl_fix.push(function(){
 		unsafeWindow.LzlEditor._s_p._submitData=submitData;
 	});
-	var o=$('<span title="召唤" unselectable="on"></span>'),j=$('#j_p_postlist'),p=utils.addPopup(j,null,loadLists);
-	utils.addPButton(o,['lzl_panel_call'],p.ontoggle,{keys:['click']});
+	var o=$('<span title="召唤" unselectable="on"></span>'),j=$('#j_p_postlist');
+	utils.addPButton(o,['lzl_panel_call'],utils.addPopup(j,null,loadLists).ontoggle,{keys:['click']});
 }
 
 // 字符实体支持，繁体支持，蓝字支持
