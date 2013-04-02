@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.8.1
+// @version	2.5.8.2
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -374,8 +374,9 @@ function initCall() {
 	utils.addPButton(o,['lzl_panel_call'],p.ontoggle,{keys:['click']});
 }
 
-// 初始化实体编码
-function initEntity(){
+// 字符实体支持，繁体支持，蓝字支持
+function initEntities(blue) {
+	// 初始化实体编码
 	function encode(v) {
 		var d;
 		//plane 1-14 (\u10000-\ueffff), 0x2400=-0xDC00+0x10000, UserScript#150073
@@ -385,7 +386,7 @@ function initEntity(){
 		if(/8964/.test(v)) v=d.toString();	// WTF!
 		return '&#'+v+'&#59;;';
 	}
-	utils.entity=function(e,t){
+	function entity(e,t){
 		//characters in CJK Unified Ideographs original set (4E00-9FFF) that are forced to be converted to simplified Chinese characters; plus characters in all plane 0 CJK blocks that are improperly converted to other characters
 		t='&[^;]+;|('+(t?t+'|':'')+'[\ud800-\udb7f][\udc00-\udfff])';
 		t=new RegExp(t,'g');
@@ -395,63 +396,65 @@ function initEntity(){
 				return v;
 			});
 		});
-	};
-}
-// 蓝字支持
-function initFontBlue() {
+	}
 	function switchBlue(e) {utils.switchColor('rgb(38,28,220)',utils.colors.blue);}
-	function fixBlue(e) {
+	function fixBlue(e) {		// will be called in fixEntities
 		e=e.replace(/<a>(.*?)<\/a>/gim,function(v,g1){
 			if(!g1.length) return '';
-			v=g1=utils.entity(g1,'.');
+			v=g1=entity(g1,'.');
 			if(!/^\w+:\/\//.test(v)) v='http://'+v;
-			return '<a href="'+v+'" target="_blank">'+g1+'</a>';
+			return '<a href="'+v+'" target=_blank>'+g1+'</a>';
 		});
 		return e;
 	}
-	unsafeWindow.TED.EditorCore.prototype.submitValidHTML.push('a');
-	utils.addStyle('.tb-editor-toolbar .font_blue,.lzl_panel_blue{background:url("'+utils.purl+'") no-repeat scroll 0 0 transparent;height:20px;width:22px;}.tb-editor-toolbar .font_blue{margin-left:3px;margin-top:12px;padding-left:0;}.tb-editor-editarea a{color:'+utils.colors.blue+' !important; text-decoration:underline !important}');
-	// 主编辑框
-	utils.addTButton($('<span class="font_blue" title="链接蓝字" unselectable="on"></span>'),switchBlue);
-	utils.hook(unsafeWindow.rich_postor._editor,'getHtml',null,fixBlue);
-	// 楼中楼
-	lzl_filters.push(fixBlue);
-	utils.addPButton($('<span title="链接蓝字" unselectable="on"></span>'),['lzl_panel_blue'],switchBlue);
-}
-// 字符实体支持，繁体支持
-function initUnicode() {
+
+	// 蓝字支持
+	if(blue) {
+		unsafeWindow.TED.EditorCore.prototype.submitValidHTML.push('a');
+		utils.addStyle('.tb-editor-toolbar .font_blue,.lzl_panel_blue{background:url("'+utils.purl+'") no-repeat scroll 0 0 transparent;height:20px;width:22px;}.tb-editor-toolbar .font_blue{margin-left:3px;margin-top:12px;padding-left:0;}.tb-editor-editarea a{color:'+utils.colors.blue+' !important; text-decoration:underline !important}');
+		// 主编辑框
+		utils.addTButton($('<span class="font_blue" title="链接蓝字" unselectable="on"></span>'),switchBlue);
+		// 楼中楼
+		utils.addPButton($('<span title="链接蓝字" unselectable="on"></span>'),['lzl_panel_blue'],switchBlue);
+	}
+
+	// 其他实体编码支持
 	utils.addStyle('\
 .tb-editor-toolbar .html_char,.lzl_html_char,.tb-editor-toolbar .html_entity,.lzl_html_entity{background:url("'+utils.purl+'") no-repeat scroll transparent;height:20px;width:22px;}\
 .tb-editor-toolbar .html_char,.tb-editor-toolbar .html_entity{margin-left:3px;margin-top:12px;padding-left:0;}\
 .tb-editor-toolbar .html_char,.lzl_html_char{background-position:-44px 0}\
 .tb-editor-toolbar .html_entity,.lzl_html_entity{background-position:-66px 0}\
 ');
-	function switchCoding(key,cls,e){
+	function getFunction(key,cls,e){
 		function update(e){e.className=cls[val];e.setAttribute('title',title[val]);}
 		var val=utils.getObj(key,'c');update(e);
-		return function(e) {e=e.target;val=val=='e'?'c':'e';utils.setObj(key,val);update(e);};
+		return {
+			switchCoding:function(e) {e=e.target;val=val=='e'?'c':'e';utils.setObj(key,val);update(e);},
+			fixEntities:function(e) {
+				var t=this===unsafeWindow.rich_postor._editor?u[0]:l[0];
+				if(val=='c') t=utils.tiebablockedwords;
+				else t='['+utils.cjk+':/]';
+				e=e.replace(/<\/?a\s[^>]*>/g,'');
+				if(blue) e=fixBlue(e);
+				e=e.split('@');var s=[entity(e.shift(),t)];
+				e.forEach(function(i){
+					s.push(i.replace(r,function(v,g1,g2) {return g1+entity(g2,t);}));
+				});
+				e=s.join('@');
+				return e;
+			},
+		};
 	}
 	title={e:'所有CJK字符实体编码',c:'仅对字库（繁体字等）中字符实体编码'};
 	var r=new RegExp('^([\\w'+utils.cjk+']+ )(.*)','gim');
-	function fixEntities(e) {
-		var t=this===unsafeWindow.rich_postor._editor?u[0]:l[0];
-		if(t.val=='c') t=utils.tiebablockedwords;
-		else {t='['+utils.cjk+':/]';e=e.replace(/<\/?a[^>]*>/g,'');}
-		e=e.split('@');var s=[utils.entity(e.shift(),t)];
-		e.forEach(function(i){
-			s.push(i.replace(r,function(v,g1,g2) {return g1+utils.entity(g2,t);}));
-		});
-		e=s.join('@');
-		return e;
-	}
 	// 主编辑框
-	var u=$('<span unselectable="on">');
-	utils.addTButton(u,switchCoding('code',{e:'html_entity',c:'html_char'},u[0]));
-	utils.hook(unsafeWindow.rich_postor._editor,'getHtml',null,fixEntities);
+	var u=$('<span unselectable="on">'),uf=getFunction('code',{e:'html_entity',c:'html_char'},u[0]);
+	utils.addTButton(u,uf.switchCoding);
+	utils.hook(unsafeWindow.rich_postor._editor,'getHtml',null,uf.fixEntities);
 	// 楼中楼
-	var l=$('<span unselectable="on">');
-	utils.addPButton(l,['lzl_html_char','lzl_html_entity'],switchCoding('lcode',{e:'lzl_html_entity',c:'lzl_html_char'},l[0]));
-	lzl_filters.push(fixEntities);
+	var l=$('<span unselectable="on">'),lf=getFunction('lcode',{e:'lzl_html_entity',c:'lzl_html_char'},l[0]);
+	utils.addPButton(l,['lzl_html_char','lzl_html_entity'],lf.switchCoding);
+	lzl_filters.push(lf.fixEntities);
 }
 
 // 修复楼中楼定位翻页
@@ -548,11 +551,9 @@ if(PageData.user.is_login) {
 		initForeColors();		//初始化：字体颜色
 		initAddWater();			// 灌水+尾巴
 		initCall();			// 召唤增强，召唤列表
-		initEntity();		// 初始化：实体编码
-		//initFontBlue();			// 蓝字支持
-		initUnicode();			// Unicode编码支持
+		initEntities(1);			// Unicode编码支持，参数1表示开启蓝字支持
 		initOverlay();			// 优化弹窗
-		utils.notice(2,'Unicode编码已修复。\n　　　　　　　　——Gerald <gera2ld@163.com>');
+		utils.notice(3,'Unicode编码和蓝字均已修复。\n　　　　　　　　——Gerald <gera2ld@163.com>');
 	}
 	if(unsafeWindow.LzlEditor) {	// 最后初始化楼中楼，使楼中楼支持以上功能
 		initLzL();		//初始化：支持已加载的功能
