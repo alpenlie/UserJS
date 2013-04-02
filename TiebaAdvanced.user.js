@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.8.2
+// @version	2.5.8.3
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -433,8 +433,10 @@ function initEntities(blue) {
 			fixEntities:function(e) {
 				var t=this===unsafeWindow.rich_postor._editor?u[0]:l[0];
 				if(val=='c') t=utils.tiebablockedwords;
-				else t='['+utils.cjk+':/]';
-				e=e.replace(/<\/?a\s[^>]*>/g,'');
+				else {
+					t='['+utils.cjk+':/]';
+					e=e.replace(/<a\s[^>]*>(.*?)<\/a>/g,'$1');	// E模式下屏蔽所有链接
+				}
 				if(blue) e=fixBlue(e);
 				e=e.split('@');var s=[entity(e.shift(),t)];
 				e.forEach(function(i){
@@ -553,7 +555,7 @@ if(PageData.user.is_login) {
 		initCall();			// 召唤增强，召唤列表
 		initEntities(1);			// Unicode编码支持，参数1表示开启蓝字支持
 		initOverlay();			// 优化弹窗
-		utils.notice(3,'Unicode编码和蓝字均已修复。\n　　　　　　　　——Gerald <gera2ld@163.com>');
+		utils.notice(3,'Unicode编码和蓝字均已修复。\n　　　　——Gerald <gera2ld@163.com>');
 	}
 	if(unsafeWindow.LzlEditor) {	// 最后初始化楼中楼，使楼中楼支持以上功能
 		initLzL();		//初始化：支持已加载的功能
