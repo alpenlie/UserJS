@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.8.4
+// @version	2.5.8.6
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -65,11 +65,16 @@ function initForeColors() {
 		document.execCommand('forecolor',false,document.queryCommandValue('forecolor').replace(/\s/g,'')==cr?'#333333':cs);
 	}
 	function fix() {
-		var e=this.editArea;
-		e.innerHTML=e.innerHTML.replace(/<font color="(.*?)">(.*?)<\/font>/gi,function(v,g1,g2){
-			if(g1==utils.colors.red) return '<span class="edit_font_color">'+g2+'</span>';
-			else if(g1==utils.colors.blue) return '<a>'+g2+'</a>';
-			else return v;
+		$(this.editArea).find('font[color]').each(function(i,e){
+			e=$(e);i=e.html();
+			switch(e.prop('color')){
+				case utils.colors.red:
+					e.replaceWith('<span class="edit_font_color">'+i+'</span>');
+					break;
+				case utils.colors.blue:
+					e.replaceWith('<a>'+i+'</a>');
+					break;
+			}
 		});
 	}
 	unsafeWindow.TED.EditorCore.prototype.submitValidHTML.push('span');	// allow font in Lzl
@@ -121,8 +126,13 @@ function initPostManager() {
 		var t=tm.list.cur;if(!t) return;
 		t.type=tt.val();
 		if(t.type=='j') try{eval(t.data=tc.val());}catch(e){return;}
-		else if(t.type=='h') t.data=tc.val();
-		else {text(p,tc.val());t.data=p.innerHTML;}
+		else if(t.type=='h') {
+			tv.find('img').each(function(i,e){
+				if(e.width) e.setAttribute('width',e.width);
+				if(e.height) e.setAttribute('height',e.height);
+			});
+			tc.val(t.data=tv.html());
+		} else {text(p,tc.val());t.data=p.innerHTML;}
 	}
 	function liveShow(e) {
 		var t=tt.val(),s;
@@ -168,7 +178,7 @@ function initAddWater() {
 	initPostManager();
 	var tails=utils.list('tails',null,function(){return {type:'s',data:'',name:'新尾巴'};},[
 		{type:'j',name:'UA',data:'"——我喂自己袋盐<br>&gt;&gt;"+navigator.userAgent'},
-		{type:'h',name:'求妹纸',data:'<img changedsize="true" pic_type="0" class="BDE_Image" src="http://imgsrc.baidu.com/forum/w%3D580/sign=6ca77dcee5dde711e7d243fe97edcef4/b03533fa828ba61e111605e44134970a314e5905.jpg" width="560" height="11"><br><img unselectable="on" pic_type="" class="BDE_Smiley" src="http://static.tieba.baidu.com/tb/editor/images/jd/j_0010.gif">求妹纸~'},
+		{type:'h',name:'求妹纸',data:'<img changedsize="true" pic_type="0" class="BDE_Image" src="http://imgsrc.baidu.com/forum/w%3D580/sign=6ca77dcee5dde711e7d243fe97edcef4/b03533fa828ba61e111605e44134970a314e5905.jpg" width="560" height="11"><br><img unselectable="on" pic_type="" class="BDE_Smiley" src="http://static.tieba.baidu.com/tb/editor/images/jd/j_0010.gif" width="40" height="40">求妹纸~'},
 	]).load(),water=utils.list('water',null,function(){return {type:'s',data:'',name:'新水贴'};},[
 		{type:'s',name:'打酱油',data:'我是打酱油的~'},
 	]).load();
@@ -211,7 +221,7 @@ function initAddWater() {
 	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',function(){
 		var e=this.editArea,t=getItem(tails,ti);
 		if(!tail.prop('checked')||!t||tailed) return;
-		e.innerHTML+='<br><br>'+t;tailed=true;
+		$(e).append('<br><br>'+t);tailed=true;
 	});
 	initTails();initWater();
 }
@@ -255,7 +265,8 @@ function initCall() {
 		c.cur.data.forEach(function(i){$('<a href=#>').html(i).appendTo(pl);});
 		pl.prop('contenteditable',false);
 	}
-	function loadLists(op) {
+	function loadLists(p) {
+		var op=p.panel;
 		c.load();op.empty();
 		$('<div class=ge_sbtn style="cursor:default">超级召唤</div>').appendTo(op);
 		sl=$('<select>').appendTo($('<label>选择名单：</label>').appendTo(op)).change(editList);
@@ -299,17 +310,17 @@ function initCall() {
 		}).add($('<span>空格隔开，双击选中一个名字</span>').appendTo(op)).hide();
 		var b=$('<div style="float:right">').appendTo(op);be=be.add(b);
 		$('<span class=ge_sbtn title="普通召唤，超过十个ID将会失败">召唤</span>').appendTo(b).click(function(e){
-			var se=op.holder==E?unsafeWindow.rich_postor._editor:unsafeWindow.LzlEditor._s_p._se;
+			var se=p.holder==E?unsafeWindow.rich_postor._editor:unsafeWindow.LzlEditor._s_p._se;
 			pl.children('a.selected').each(function(i,e){se.execCommand('inserthtml','@'+e.innerHTML+'&nbsp;');});
-			op.onclose();
+			p.onclose();
 		});
 		$('<span class=ge_sbtn title="插入一个占位符，将自动替换成召唤名单">自动召唤</span>').appendTo(b).click(function(e){
-			e=[];pl.children('a.selected').each(function(i,a){e.push(a.innerHTML);});
-			op.onclose();
+			e=[];pl.children('a.selected').each(function(){e.push(this.innerHTML);});
+			p.onclose();
 			if(e.length) {
-				op.holder.names=e;
-				e=op.holder==E?unsafeWindow.rich_postor._editor:unsafeWindow.LzlEditor._s_p._se;
-				e.execCommand('inserthtml','<img class=BDE_Smiley title="将在此自动插入召唤名单" alt="召唤列表">');
+				p.holder.names=e;
+				e=p.holder==E?unsafeWindow.rich_postor._editor:unsafeWindow.LzlEditor._s_p._se;
+				e.execCommand('inserthtml','<img class=BDE_Smiley title="将在此自动插入召唤名单" alt="召唤列表" height=18>');
 			}
 		});
 		c.list.forEach(function(i){$('<option>').text(i.name).appendTo(sl);});
@@ -317,13 +328,10 @@ function initCall() {
 	}
 	var r=new RegExp('(@[\\w'+utils.cjk+']+)(\\s|<|$)','g'),l=/<img [^>]*?alt="召唤列表"[^>]*>/;
 	function fixCall() {
-		var e=this.editArea;
-		e.innerHTML=e.innerHTML.replace(/<span class="at">(.*?)<\/span>/gim,'$1').replace(r,function(v,g1,g2) {
-			var l=g1.length-1;
-			for(var i=0;i<g1.length;i++) if(g1[i].charCodeAt()>255) l++;
-			if(l>14) return v;
-			if(g2!='<') g2='';
-			return g1+' '+g2;
+		$(this.editArea).find('span.at').each(function(i,e){
+			e=$(e);var g=e.html().replace(/\s+$/,''),l=g.length-1;
+			for(i=0;i<g.length;i++) if(g.charCodeAt(i)>255) l++;
+			if(l<=14) g+=' ';e.replaceWith(g);
 		});
 	}
 	function addNames(e,n){
@@ -332,7 +340,7 @@ function initCall() {
 	}
 	// 主编辑框
 	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',fixCall);
-	utils.addPopup(E,utils.addTButton($('<span class="call_list" title="召唤" unselectable="on"></span>')),loadLists);
+	utils.addPopup(E,utils.addTButton($('<span class="call_list" title="召唤" unselectable="on">')),loadLists);
 	var _post=unsafeWindow.PostHandler.post;
 	unsafeWindow.PostHandler.post=function(a,b,c,d,e){
 		e=b.content;
@@ -356,7 +364,7 @@ function initCall() {
 				d.value=addNames(e,j.names);
 				$.tb.post(FORUM_POST_URL.postAdd,b,function(b){a._showAddResult(b);});
 			}
-			a._se.editArea.innerHTML=addNames(e,'<img class=BDE_Smiley alt="即将刷新召唤列表~">');
+			$(a._se.editArea).find('img[alt="召唤列表"]').prop({class:'BDE_Smiley',alt:"即将刷新召唤列表~"});
 			a.triggerEvent("onsuccess");
 			a._se.empty();
 			setTimeout(function(){location.reload();},1000);
