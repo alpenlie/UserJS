@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.8.6
+// @version	2.5.8.7
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -434,13 +434,12 @@ function initEntities(blue) {
 .tb-editor-toolbar .html_char,.lzl_html_char{background-position:-44px 0}\
 .tb-editor-toolbar .html_entity,.lzl_html_entity{background-position:-66px 0}\
 ');
-	function getFunction(key,cls,e){
+	function getFunction(key,cls,u){
 		function update(e){e.className=cls[val];e.setAttribute('title',title[val]);}
-		var val=utils.getObj(key,'c');update(e);
+		var val=utils.getObj(key,'c');update(u);
 		return {
 			switchCoding:function(e) {e=e.target;val=val=='e'?'c':'e';utils.setObj(key,val);update(e);},
-			fixEntities:function(e) {
-				var t=this===unsafeWindow.rich_postor._editor?u[0]:l[0];
+			fixEntities:function(e,t) {
 				if(val=='c') t=utils.tiebablockedwords;
 				else {
 					t='['+utils.cjk+':/]';
@@ -536,11 +535,8 @@ function initLzL() {
 	lzl_init.forEach(function(i){i();});
 	utils.hook(unsafeWindow.SimplePostor.prototype,'_buildNormalEditor',null,fixLzl);
 	utils.hook(unsafeWindow.TED.SimpleEditor.prototype,'filteSubmitHTML',lzl_efilters);
-	utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',null,function(){
-		var i,d;
-		for(i=0;i<this._data.length;i++) if((d=this._data[i]).name=='content') {
-			lzl_filters.forEach(function(f){d.value=f(d.value);});break;
-		}
+	utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',null,function(d){
+		d=this._data;lzl_filters.forEach(function(f){d.content=f(d.content);});
 	});
 }
 
