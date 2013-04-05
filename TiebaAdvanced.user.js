@@ -58,29 +58,6 @@ utils.addPButton=function(o,c,m,a) {
 	return o;
 };
 
-// 字体颜色初始化
-function initForeColors() {
-	utils.colors={blue:'#261cdc',red:'#e10602'};
-	utils.switchColor=function(cr,cs) {
-		document.execCommand('forecolor',false,document.queryCommandValue('forecolor').replace(/\s/g,'')==cr?'#333333':cs);
-	}
-	function fix() {
-		$(this.editArea).find('font[color]').each(function(i,e){
-			e=$(e);i=e.html();
-			switch(e.prop('color')){
-				case utils.colors.red:
-					e.replaceWith('<span class="edit_font_color">'+i+'</span>');
-					break;
-				case utils.colors.blue:
-					e.replaceWith('<a>'+i+'</a>');
-					break;
-			}
-		});
-	}
-	unsafeWindow.TED.EditorCore.prototype.submitValidHTML.push('span');	// allow font in Lzl
-	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',fix);
-	lzl_efilters.push(fix);
-}
 // 初始化贴子管理面板
 function initPostManager() {
 	if(utils.postManager) return;
@@ -161,7 +138,7 @@ function initPostManager() {
 	var tr=$('<div class=fright></div>').appendTo(tm);
 	$('<span class=ge_sbtn>添加</span>').appendTo(tr).click(tm.newItem);
 	$('<span class=ge_sbtn>删除</span>').appendTo(tr).click(function() {
-		var l=tm.list.last;tm.list.pop(l);editItem();ti.children().eq(l).remove();
+		var l=tm.list.last;tm.list.pop(l);ti.children().eq(l).remove();editItem(1);
 	});
 	$('<span class=ge_sbtn>关闭</span>').appendTo(tr).click(function() {
 		tm.list.save();if(tm.callback) tm.callback();
@@ -383,6 +360,29 @@ function initCall() {
 	utils.addPButton(o,['lzl_panel_call'],utils.addPopup(j,null,loadLists).ontoggle,{keys:['click']});
 }
 
+// 字体颜色初始化
+function initForeColors() {
+	utils.colors={blue:'#261cdc',red:'#e10602'};
+	utils.switchColor=function(cr,cs) {
+		document.execCommand('forecolor',false,document.queryCommandValue('forecolor').replace(/\s/g,'')==cr?'#333333':cs);
+	}
+	function fix() {
+		$(this.editArea).find('font[color]').each(function(i,e){
+			e=$(e);i=e.html();
+			switch(e.prop('color')){
+				case utils.colors.red:
+					e.replaceWith('<span class="edit_font_color">'+i+'</span>');
+					break;
+				case utils.colors.blue:
+					e.replaceWith('<a>'+i+'</a>');
+					break;
+			}
+		});
+	}
+	unsafeWindow.TED.EditorCore.prototype.submitValidHTML.push('span');	// allow font in Lzl
+	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',fix);
+	lzl_efilters.push(fix);
+}
 // 字符实体支持，繁体支持，蓝字支持
 function initEntities(blue) {
 	// 初始化实体编码
@@ -555,9 +555,9 @@ if(PageData.user.is_login) {
 	if(unsafeWindow.rich_postor&&unsafeWindow.rich_postor._editor) {
 		// 以下模块仅在有输入框且允许发言时加载
 		initSpaceKeep();		// 空格显示修复
-		initForeColors();		//初始化：字体颜色
 		initAddWater();			// 灌水+尾巴
 		initCall();			// 召唤增强，召唤列表
+		initForeColors();		//初始化：字体颜色
 		initEntities(1);			// Unicode编码支持，参数1表示开启蓝字支持
 		initOverlay();			// 优化弹窗
 		utils.notice(3,'Unicode编码和蓝字均已修复。\n　　　　——Gerald <gera2ld@163.com>');
