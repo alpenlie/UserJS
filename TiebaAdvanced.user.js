@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.8.7
+// @version	2.5.8.8
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -384,7 +384,7 @@ function initForeColors() {
 	lzl_efilters.push(fix);
 }
 // 字符实体支持，繁体支持，蓝字支持
-function initEntities(blue) {
+/*function initEntities(blue) {
 	// 初始化实体编码
 	function encode(v) {
 		var d;
@@ -393,7 +393,7 @@ function initEntities(blue) {
 		else d=v.charCodeAt();
 		v='x'+(d+65536).toString(16).substr(1);
 		if(/8964/.test(v)) v=d.toString();	// WTF!
-		return '&#'+v+'&#59;;';
+		return '&#'+v+';';
 	}
 	function entity(e,t){
 		//characters in CJK Unified Ideographs original set (4E00-9FFF) that are forced to be converted to simplified Chinese characters; plus characters in all plane 0 CJK blocks that are improperly converted to other characters
@@ -465,7 +465,7 @@ function initEntities(blue) {
 	var l=$('<span unselectable="on">'),lf=getFunction('lcode',{e:'lzl_html_entity',c:'lzl_html_char'},l[0]);
 	utils.addPButton(l,['lzl_html_char','lzl_html_entity'],lf.switchCoding);
 	lzl_filters.push(lf.fixEntities);
-}
+}*/
 
 // 修复楼中楼定位翻页
 function initLzlFix() {
@@ -558,9 +558,9 @@ if(PageData.user.is_login) {
 		initAddWater();			// 灌水+尾巴
 		initCall();			// 召唤增强，召唤列表
 		initForeColors();		//初始化：字体颜色
-		initEntities(1);			// Unicode编码支持，参数1表示开启蓝字支持
+		//initEntities(1);			// Unicode编码支持，参数1表示开启蓝字支持
 		initOverlay();			// 优化弹窗
-		utils.notice(3,'Unicode编码和蓝字均已修复。\n　　　　——Gerald <gera2ld@163.com>');
+		utils.notice(4,'Unicode编码和蓝字被屏蔽得妥妥的，暂时不能用了。。。\n　　　　——Gerald <gera2ld@163.com>');
 	}
 	if(unsafeWindow.LzlEditor) {	// 最后初始化楼中楼，使楼中楼支持以上功能
 		initLzL();		//初始化：支持已加载的功能

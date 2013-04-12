@@ -2,7 +2,7 @@
 // @name	Tieba Fix for Opera
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
-// @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
+// @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
 // @version	1.0.2
 // @description	Opera贴吧修复 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/153687
