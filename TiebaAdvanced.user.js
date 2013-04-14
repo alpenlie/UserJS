@@ -11,7 +11,6 @@
 // @include	http://tieba.baidu.com/*
 // @exclude	http://tieba.baidu.com/tb/*
 // @require	https://raw.github.com/gera2ld/UserJS/master/lib/TiebaCommon.min.user.js
-// @require	https://raw.github.com/gera2ld/UserJS/master/lib/TiebaBlockedWords.user.js
 // ==/UserScript==
 
 // 提醒页面强制解码
@@ -362,7 +361,7 @@ function initCall() {
 
 // 字体颜色初始化
 function initForeColors() {
-	utils.colors={blue:'#261cdc',red:'#e10602'};
+	utils.colors={red:'#e10602'};
 	utils.switchColor=function(cr,cs) {
 		document.execCommand('forecolor',false,document.queryCommandValue('forecolor').replace(/\s/g,'')==cr?'#333333':cs);
 	}
@@ -373,9 +372,6 @@ function initForeColors() {
 				case utils.colors.red:
 					e.replaceWith('<span class="edit_font_color">'+i+'</span>');
 					break;
-				case utils.colors.blue:
-					e.replaceWith('<a>'+i+'</a>');
-					break;
 			}
 		});
 	}
@@ -383,89 +379,6 @@ function initForeColors() {
 	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',fix);
 	lzl_efilters.push(fix);
 }
-// 字符实体支持，繁体支持，蓝字支持
-/*function initEntities(blue) {
-	// 初始化实体编码
-	function encode(v) {
-		var d;
-		//plane 1-14 (\u10000-\ueffff), 0x2400=-0xDC00+0x10000, UserScript#150073
-		if(v[1]) d=((v.charCodeAt(0)-0xd800)<<10)+v.charCodeAt(1)+0x2400;
-		else d=v.charCodeAt();
-		v='x'+(d+65536).toString(16).substr(1);
-		if(/8964/.test(v)) v=d.toString();	// WTF!
-		return '&#'+v+';';
-	}
-	function entity(e,t){
-		//characters in CJK Unified Ideographs original set (4E00-9FFF) that are forced to be converted to simplified Chinese characters; plus characters in all plane 0 CJK blocks that are improperly converted to other characters
-		t='&[^;]+;|('+(t?t+'|':'')+'[\ud800-\udb7f][\udc00-\udfff])';
-		t=new RegExp(t,'g');
-		return e.replace(/(^|>)([^<]*)/g,function(v,g1,g2){	// strip tags
-			return g1+g2.replace(t,function(v,g){
-				if(g) return g.replace(/./g,encode);
-				return v;
-			});
-		});
-	}
-	function switchBlue(e) {utils.switchColor('rgb(38,28,220)',utils.colors.blue);}
-	function fixBlue(e) {		// will be called in fixEntities
-		e=e.replace(/<a>(.*?)<\/a>/gim,function(v,g1){
-			if(!g1.length) return '';
-			v=g1=entity(g1,'.');
-			if(!/^\w+:\/\//.test(v)) v='http://'+v;
-			return '<a href="'+v+'" target=_blank>'+g1+'</a>';
-		});
-		return e;
-	}
-
-	// 蓝字支持
-	if(blue) {
-		unsafeWindow.TED.EditorCore.prototype.submitValidHTML.push('a');
-		utils.addStyle('.tb-editor-toolbar .font_blue,.lzl_panel_blue{background:url("'+utils.purl+'") no-repeat scroll 0 0 transparent;height:20px;width:22px;}.tb-editor-toolbar .font_blue{margin-left:3px;margin-top:12px;padding-left:0;}.tb-editor-editarea a{color:'+utils.colors.blue+' !important; text-decoration:underline !important}');
-		// 主编辑框
-		utils.addTButton($('<span class="font_blue" title="链接蓝字" unselectable="on"></span>'),switchBlue);
-		// 楼中楼
-		utils.addPButton($('<span title="链接蓝字" unselectable="on"></span>'),['lzl_panel_blue'],switchBlue);
-	}
-
-	// 其他实体编码支持
-	utils.addStyle('\
-.tb-editor-toolbar .html_char,.lzl_html_char,.tb-editor-toolbar .html_entity,.lzl_html_entity{background:url("'+utils.purl+'") no-repeat scroll transparent;height:20px;width:22px;}\
-.tb-editor-toolbar .html_char,.tb-editor-toolbar .html_entity{margin-left:3px;margin-top:12px;padding-left:0;}\
-.tb-editor-toolbar .html_char,.lzl_html_char{background-position:-44px 0}\
-.tb-editor-toolbar .html_entity,.lzl_html_entity{background-position:-66px 0}\
-');
-	function getFunction(key,cls,u){
-		function update(e){e.className=cls[val];e.setAttribute('title',title[val]);}
-		var val=utils.getObj(key,'c');update(u);
-		return {
-			switchCoding:function(e) {e=e.target;val=val=='e'?'c':'e';utils.setObj(key,val);update(e);},
-			fixEntities:function(e,t) {
-				if(val=='c') t=utils.tiebablockedwords;
-				else {
-					t='['+utils.cjk+':/]';
-					e=e.replace(/<a\s[^>]*>(.*?)<\/a>/g,'$1');	// E模式下屏蔽所有链接
-				}
-				if(blue) e=fixBlue(e);
-				e=e.split('@');var s=[entity(e.shift(),t)];
-				e.forEach(function(i){
-					s.push(i.replace(r,function(v,g1,g2) {return g1+entity(g2,t);}));
-				});
-				e=s.join('@');
-				return e;
-			},
-		};
-	}
-	title={e:'所有CJK字符实体编码',c:'仅对字库（繁体字等）中字符实体编码'};
-	var r=new RegExp('^([\\w'+utils.cjk+']+ )(.*)','gim');
-	// 主编辑框
-	var u=$('<span unselectable="on">'),uf=getFunction('code',{e:'html_entity',c:'html_char'},u[0]);
-	utils.addTButton(u,uf.switchCoding);
-	utils.hook(unsafeWindow.rich_postor._editor,'getHtml',null,uf.fixEntities);
-	// 楼中楼
-	var l=$('<span unselectable="on">'),lf=getFunction('lcode',{e:'lzl_html_entity',c:'lzl_html_char'},l[0]);
-	utils.addPButton(l,['lzl_html_char','lzl_html_entity'],lf.switchCoding);
-	lzl_filters.push(lf.fixEntities);
-}*/
 
 // 修复楼中楼定位翻页
 function initLzlFix() {
@@ -541,29 +454,27 @@ function initLzL() {
 }
 
 // 以下为模块调用，可将不需要的模块注释，不要改变顺序
-if($) utils.fixer(function(){	// 出错反馈按钮
-if(!PageData||!PageData.user) return;
-// 以下模块无需登录
-if(PageData.thread) {	// 以下模块仅在帖子浏览页面加载
-	initSpaceFix();			// 空格显示修复
-	initLzlFix();			// 修复楼中楼定位翻页
-}
-//以下模块仅在登录时加载
-if(PageData.user.is_login) {
-	initNoticeDecode();		// 提醒页面强制解码
-	initPanelCall();		// 用户卡片上添加到当前@列表功能支持
-	if(unsafeWindow.rich_postor&&unsafeWindow.rich_postor._editor) {
-		// 以下模块仅在有输入框且允许发言时加载
-		initSpaceKeep();		// 空格显示修复
-		initAddWater();			// 灌水+尾巴
-		initCall();			// 召唤增强，召唤列表
-		initForeColors();		//初始化：字体颜色
-		//initEntities(1);			// Unicode编码支持，参数1表示开启蓝字支持
-		initOverlay();			// 优化弹窗
-		utils.notice(4,'Unicode编码和蓝字被屏蔽得妥妥的，暂时不能用了。。。\n　　　　——Gerald <gera2ld@163.com>');
+if($&&PageData&&PageData.user) utils.fixer(function(){	// 出错反馈按钮
+	// 以下模块无需登录
+	if(PageData.thread) {	// 以下模块仅在帖子浏览页面加载
+		initSpaceFix();			// 空格显示修复
+		initLzlFix();			// 修复楼中楼定位翻页
 	}
-	if(unsafeWindow.LzlEditor) {	// 最后初始化楼中楼，使楼中楼支持以上功能
-		initLzL();		//初始化：支持已加载的功能
+	//以下模块仅在登录时加载
+	if(PageData.user.is_login) {
+		initNoticeDecode();		// 提醒页面强制解码
+		initPanelCall();		// 用户卡片上添加到当前@列表功能支持
+		if(unsafeWindow.rich_postor&&unsafeWindow.rich_postor._editor) {
+			// 以下模块仅在有输入框且允许发言时加载
+			initSpaceKeep();		// 空格显示修复
+			initAddWater();			// 灌水+尾巴
+			initCall();			// 召唤增强，召唤列表
+			initForeColors();		//初始化：字体颜色
+			initOverlay();			// 优化弹窗
+			//utils.notice(4,'Unicode编码和蓝字被屏蔽得妥妥的，暂时不能用了。。。\n　　　　——Gerald <gera2ld@163.com>');
+		}
+		if(unsafeWindow.LzlEditor) {	// 最后初始化楼中楼，使楼中楼支持以上功能
+			initLzL();		//初始化：支持已加载的功能
+		}
 	}
-}
 });
