@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.8.8
+// @version	2.5.9
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -100,21 +100,25 @@ function initPostManager() {
 	}
 	function saveItem(e) {
 		var t=tm.list.cur;if(!t) return;
-		t.type=tt.val();
-		if(t.type=='j') try{eval(t.data=tc.val());}catch(e){return;}
-		else if(t.type=='h') {
-			tv.find('img').each(function(i,e){
-				if(e.width) e.setAttribute('width',e.width);
-				if(e.height) e.setAttribute('height',e.height);
-			});
-			tc.val(t.data=tv.html());
-		} else {text(p,tc.val());t.data=p.innerHTML;}
+		switch(t.type=tt.val()) {
+			case 'j':try{eval(t.data=tc.val());}catch(e){return;}break;
+			case 's':text(p,tc.val());t.data=p.innerHTML;break;
+			case 'H':t.data=tc.val();break;
+			default:tv.find('img').each(function(i,e){
+								if(e.width) e.setAttribute('width',e.width);
+								if(e.height) e.setAttribute('height',e.height);
+							});
+							tc.val(t.data=tv.html());
+		}
 	}
 	function liveShow(e) {
 		var t=tt.val(),s;
 		if(t=='j') try{s=eval(tc.val());}catch(e){s='<font color=red>JS代码有误！</font>';}
 		else s=tc.val();
-		if(t=='s') text(tv,s); else tv.html(s);
+		if(t=='s') text(tv,s); else {
+			if(t=='H') s=s.split('\n').shift();
+			tv.html(s);
+		}
 	}
 	tm.loadPanel=function(t,n,c) {
 		tm.list=t;tn.text(n);tm.callback=c;
@@ -133,7 +137,8 @@ function initPostManager() {
 		var t=prompt('修改名称：',tm.list.cur.name);
 		if(t) {tm.list.cur.name=t;ti.children('option:eq('+tm.list.last+')').text(t);}
 	});
-	var tt=$('<select>').appendTo($('<label>类型：</label>').appendTo(tl)).html('<option value="s" checked>普通字串</option><option value="h">HTML代码</option><option value="j">JS代码</option>').change(function(){liveShow();saveItem();});
+	var tt=$('<select>').appendTo($('<label>类型：</label>').appendTo(tl)).html('<option value="s" checked>普通字串</option><option value="h">HTML代码</option><option value="H">HTML随机</option><option value="j">JS代码</option>').change(function(){liveShow();saveItem();});
+	$('<a href=http://gera2ld.blog.163.com/blog/static/18801729620132293204924/ target=_blank title="帮助">(?)</a>').appendTo(tl);
 	var tr=$('<div class=fright></div>').appendTo(tm);
 	$('<span class=ge_sbtn>添加</span>').appendTo(tr).click(tm.newItem);
 	$('<span class=ge_sbtn>删除</span>').appendTo(tr).click(function() {
@@ -163,8 +168,9 @@ function initAddWater() {
 	function getItem(t,s){
 		var l=s.prop('selectedIndex'),L=t.length;if(!L) return;
 		if(!l) l=Math.floor(Math.random()*L); else l--;
-		var d=t.list[l].data;
-		if(t.list[l].type=='j') d=eval(d);
+		t=t.list[l];var d=t.data;
+		if(t.type=='j') d=eval(d);
+		else if(t.type=='H') {d=d.split('\n');d=d[Math.floor(Math.random()*d.length)];}
 		return d;
 	}
 	var op=utils.addPopup($('#edit_parent'),utils.addSButton('灌水')).panel;
@@ -201,9 +207,9 @@ function initAddWater() {
 	});
 	initTails();initWater();
 }
-// 保留第一个空格
+// 保留开头和末尾的空格
 function initSpaceKeep() {
-	function fixSpace(c) {return c.replace(/^&nbsp;/,'\xa0');}
+	function fixSpace(c) {return c.replace(/^&nbsp;/,'　').replace(/&nbsp;$/,' 　');}
 	// 主编辑框
 	utils.hook(unsafeWindow.rich_postor._editor,'getHtml',null,fixSpace);
 	// 楼中楼
@@ -269,21 +275,28 @@ function initCall() {
 			s.removeAllRanges();s.addRange(r);	// Compatible with Chrome
 		});
 		$('<label>名单管理：</label>').appendTo(op);
-		be=$('<span class=ge_sbtn>编辑</span>').appendTo(op).click(function(e){
+		be=$('<span>').appendTo(op);
+		$('<span class=ge_sbtn>编辑</span>').appendTo(be).click(function(e){
 			bs.show();be.hide();
 			pl.prop('contenteditable',true);
 			pl.text(c.cur.data.join(' '));
-		}).add($('<span class=ge_sbtn>全选/不选</span>').appendTo(op).click(function(e){
+		});
+		$('<span class=ge_sbtn>全选/不选</span>').appendTo(be).click(function(e){
 			e.preventDefault();
 			var a=pl.children('a:not(.selected)');
 			if(a.length) a.addClass('selected'); else pl.children('a').removeClass('selected');
-		}));
-		bs=$('<span class="ge_sbtn ge_rsep">完成</span>').appendTo(op).css('background','green').click(function(e){
+		});
+		bs=$('<span>').appendTo(op).hide();
+		$('<span class=ge_sbtn>去重</span>').appendTo(bs).click(function(e){
 			var d=pl.text().replace(/^\s+|\s+$/,'').split(/\s+/),h={};
 			d.forEach(function(i){h[i]=0;});
-			c.cur.data=[];for(d in h) c.cur.data.push(d);
+			pl.text(Object.getOwnPropertyNames(h).join(' '));
+		});
+		$('<span class="ge_sbtn ge_rsep">完成</span>').appendTo(bs).click(function(e){
+			c.cur.data=pl.text().replace(/^\s+|\s+$/,'').split(/\s+/);
 			c.save();editList(e);be.show();bs.hide();
-		}).add($('<span>空格隔开，双击选中一个名字</span>').appendTo(op)).hide();
+		});
+		$('<span>空格隔开，双击选中一个名字</span>').appendTo(bs);
 		var b=$('<div style="float:right">').appendTo(op);be=be.add(b);
 		$('<span class=ge_sbtn title="普通召唤，超过十个ID将会失败">召唤</span>').appendTo(b).click(function(e){
 			var se=p.holder==E?unsafeWindow.rich_postor._editor:unsafeWindow.LzlEditor._s_p._se;
@@ -302,49 +315,43 @@ function initCall() {
 		c.list.forEach(function(i){$('<option>').text(i.name).appendTo(sl);});
 		editList();
 	}
-	var r=new RegExp('(@[\\w'+utils.cjk+']+)(\\s|<|$)','g'),l=/<img [^>]*?alt="召唤列表"[^>]*>/;
-	function fixCall() {
-		$(this.editArea).find('span.at').each(function(i,e){
-			e=$(e);var g=e.html().replace(/\s+$/,''),l=g.length-1;
-			for(i=0;i<g.length;i++) if(g.charCodeAt(i)>255) l++;
-			if(l<=14) g+=' ';e.replaceWith(g);
-		});
-	}
+	var l=/<img [^>]*?alt="召唤列表"[^>]*>/;
 	function addNames(e,n){
 		if(n.splice) n='@'+n.splice(0,10).join(' @')+' ';
-		return e.replace(l,n);
+		return e.replace(l,n).replace(/ $/,' 　');
 	}
 	// 主编辑框
-	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',fixCall);
 	utils.addPopup(E,utils.addTButton($('<span class="call_list" title="召唤" unselectable="on">')),loadLists);
 	var _post=unsafeWindow.PostHandler.post;
-	unsafeWindow.PostHandler.post=function(a,b,c,d,e){
-		e=b.content;
-		if(E.names&&e.search(l)>=0) {
-			while(E.names.length) {
+	unsafeWindow.PostHandler.post=function(a,b,c,d){
+		function post(){
+			if(E.names) {
 				b.content=addNames(e,E.names);
-				_post.call(unsafeWindow.PostHandler,a,b,c,d);
+				if(!E.names.length) delete E.names;
 			}
-			delete E.names;
-		} else _post.call(unsafeWindow.PostHandler,a,b,c,d);
+			_post.call(unsafeWindow.PostHandler,a,b,E.names?delay:c,d);
+		}
+		function delay(m){
+			setTimeout(post,1000);
+		}
+		var e=b.content;
+		if(E.names&&e.search(l)<0) delete E.names;
+		post();
 	};
 	// 楼中楼
-	lzl_efilters.push(fixCall);
-	function submitData(a,e,b,d){
+	function submitData(a,e,b){
+		function post(){
+			b.content=addNames(e,j.names);
+			if(!j.names.length) delete j.names;
+			$.tb.post(FORUM_POST_URL.postAdd,b,delay);
+		}
+		function delay(m){
+			if(j.names) setTimeout(post,1000);
+			else setTimeout(function(){location.reload();},0);
+		}
 		a=this;
 		if(j.names&&a._se.editArea.innerHTML.search(l)>=0) {
-			b=a._getData();
-			for(e=0;e<b.length;e++) if((d=b[e]).name=='content') break;
-			e=d.value;
-			while(j.names.length) {
-				d.value=addNames(e,j.names);
-				$.tb.post(FORUM_POST_URL.postAdd,b,function(b){a._showAddResult(b);});
-			}
-			$(a._se.editArea).find('img[alt="召唤列表"]').prop({class:'BDE_Smiley',alt:"即将刷新召唤列表~"});
-			a.triggerEvent("onsuccess");
-			a._se.empty();
-			setTimeout(function(){location.reload();},1000);
-			delete j.names;
+			b=a._getData();e=b.content;post();
 		} else _submitData.call(a);
 	}
 	var _submitData;
