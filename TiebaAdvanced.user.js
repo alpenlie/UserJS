@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.9
+// @version	2.5.10
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -154,7 +154,7 @@ function initPostManager() {
 	$('<div class=x>').appendTo(tm);
 	utils.postManager=tm;
 }
-// 灌水：原尾巴功能
+// 灌水
 function initAddWater() {
 	initPostManager();
 	var tails=utils.list('tails',null,function(){return {type:'s',data:'',name:'新尾巴'};},[
@@ -176,42 +176,55 @@ function initAddWater() {
 	var op=utils.addPopup($('#edit_parent'),utils.addSButton('灌水')).panel;
 	$('<div class=ge_sbtn style="cursor:default">智能灌水</div>').appendTo(op);
 	var ti=$('<select class=ge_rsep>').appendTo($('<label>尾巴：</label>').appendTo(op)).change(function(e){utils.setObj('tailindex',this.selectedIndex);});
-	$('<span class=ge_sbtn>管理</span>').appendTo(op).click(function(e){utils.postManager.loadPanel(tails,'尾巴管理',initTails);});
 	$('<br>').appendTo(op);
 	var tail=utils.bindProp($('<input type=checkbox>').prependTo($('<label class=ge_rsep>自动附加尾巴</label>').appendTo(op)),'checked','usetail',true);
 	$('<br>').appendTo(op);
-	$('<span class=ge_sbtn>').html('存为新尾巴').appendTo(op).click(function(e){
+	$('<span class=ge_sbtn>存为新尾巴</span>').appendTo(op).click(function(e){
 		utils.postManager.loadPanel(tails,'尾巴管理',initTails);
 		utils.postManager.newItem(e,{type:'h',name:'新尾巴',data:unsafeWindow.rich_postor._editor.editArea.innerHTML});
 	});
+	$('<span class=ge_sbtn>管理</span>').appendTo(op).click(function(e){utils.postManager.loadPanel(tails,'尾巴管理',initTails);});
 	$('<hr>').appendTo(op);
 	var wi=$('<select class=ge_rsep>').appendTo($('<label>水贴：</label>').appendTo(op)).change(function(e){utils.setObj('waterindex',this.selectedIndex);});
-	$('<span class=ge_sbtn>管理</span>').appendTo(op).click(function(e){utils.postManager.loadPanel(water,'水贴管理',initWater);});
 	$('<br>').appendTo(op);
-	$('<span class=ge_sbtn>').html('存为新水贴').appendTo(op).click(function(e){
+	$('<span class=ge_sbtn>存为新水贴</span>').appendTo(op).click(function(e){
 		utils.postManager.loadPanel(water,'水贴管理',initWater);
 		utils.postManager.newItem(e,{type:'h',name:'新水贴',data:unsafeWindow.rich_postor._editor.editArea.innerHTML});
 	});
-	$('<span class=ge_sbtn>').html('载入').appendTo(op).click(function(e){
+	$('<span class=ge_sbtn>管理</span>').appendTo(op).click(function(e){utils.postManager.loadPanel(water,'水贴管理',initWater);});
+	$('<br>').appendTo(op);
+	$('<span class=ge_sbtn>载入</span>').appendTo(op).click(function(e){
 		unsafeWindow.rich_postor._editor.execCommand('inserthtml',getItem(water,wi));
 	});
-	$('<span class=ge_sbtn>').html('发表').appendTo(op).click(function(e){
+	$('<span class=ge_sbtn>发表</span>').appendTo(op).click(function(e){
 		unsafeWindow.rich_postor._editor.editArea.innerHTML=getItem(water,wi);
 		unsafeWindow.rich_postor._submit();
 	});
+	$('<span class=ge_sbtn>人工置顶</span>').appendTo(op).click(function(e){
+		function post(){PostHandler.post(rich_postor._option.url,b,delay,function(){});}
+		function delay(m){
+			if(m) {
+				if(m.no) d+=1000; else {d=utils.delay;e.text('停止('+(++c)+')');}
+			}
+			if(!m||!m.no) b.content=getItem(water,wi);
+			setTimeout(post,d);
+		}
+		(e=$(this)).unbind('click').text('停止').click(function(){location.reload();});
+		var c=0,d=0;b=rich_postor._getData();delay();
+	});
 	var tailed=false;
-	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',function(){
+	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',{before:function(){
 		var e=this.editArea,t=getItem(tails,ti);
 		if(!tail.prop('checked')||!t||tailed) return;
 		$(e).append('<br><br>'+t);tailed=true;
-	});
+	}});
 	initTails();initWater();
 }
 // 保留开头和末尾的空格
 function initSpaceKeep() {
-	function fixSpace(c) {return c.replace(/^&nbsp;/,'　').replace(/&nbsp;$/,' 　');}
+	function fixSpace(f,r) {return r.replace(/^&nbsp;/,'　').replace(/&nbsp;$/,' 　');}
 	// 主编辑框
-	utils.hook(unsafeWindow.rich_postor._editor,'getHtml',null,fixSpace);
+	utils.hook(unsafeWindow.rich_postor._editor,'getHtml',{after:fixSpace});
 	// 楼中楼
 	lzl_filters.push(fixSpace);
 }
@@ -322,42 +335,40 @@ function initCall() {
 	}
 	// 主编辑框
 	utils.addPopup(E,utils.addTButton($('<span class="call_list" title="召唤" unselectable="on">')),loadLists);
-	var _post=unsafeWindow.PostHandler.post;
-	unsafeWindow.PostHandler.post=function(a,b,c,d){
-		function post(){
-			if(E.names) {
-				b.content=addNames(e,E.names);
+	utils.hook(unsafeWindow.PostHandler,'post',{before:function(f,a){
+		function post(){f.hook_func(a[0],a[1],E.names?delay:a[2],a[3]);}
+		function delay(m){
+			if(m){if(m.no) d+=1000; else d=utils.delay;}
+			if((!m||!m.no)&&E.names) {
+				a[1].content=addNames(e,E.names);
 				if(!E.names.length) delete E.names;
 			}
-			_post.call(unsafeWindow.PostHandler,a,b,E.names?delay:c,d);
+			setTimeout(post,d);
 		}
-		function delay(m){
-			setTimeout(post,1000);
-		}
-		var e=b.content;
+		var e=a[1].content,d=0;f.hookStop();
 		if(E.names&&e.search(l)<0) delete E.names;
-		post();
-	};
+		delay();
+	}});
 	// 楼中楼
-	function submitData(a,e,b){
-		function post(){
-			b.content=addNames(e,j.names);
-			if(!j.names.length) delete j.names;
-			$.tb.post(FORUM_POST_URL.postAdd,b,delay);
-		}
-		function delay(m){
-			if(j.names) setTimeout(post,1000);
-			else setTimeout(function(){location.reload();},0);
-		}
-		a=this;
-		if(j.names&&a._se.editArea.innerHTML.search(l)>=0) {
-			b=a._getData();e=b.content;post();
-		} else _submitData.call(a);
-	}
-	var _submitData;
 	lzl_init.push(function(){
-		_submitData=unsafeWindow.SimplePostor.prototype._submitData;
-		unsafeWindow.SimplePostor.prototype._submitData=submitData;
+		utils.hook(unsafeWindow.SimplePostor.prototype,'_submitData',{before:function(f){
+			function post(){
+				$.tb.post(FORUM_POST_URL.postAdd,b,delay);
+			}
+			function delay(m){
+				if(j.names) {
+					if(m){if(m.no) d+=1000; else d=utils.delay;}
+					if(!m||!m.no) {
+						b.content=addNames(a,j.names);
+						if(!j.names.length) delete j.names;
+					}
+					setTimeout(post,d);
+				} else location.reload();
+			}
+			if(j.names&&this._se.editArea.innerHTML.search(l)>=0) {
+				f.hookStop();var d=0,b=this._getData(),a=b.content;delay();
+			}
+		}});
 	});
 	lzl_fix.push(function(){
 		unsafeWindow.LzlEditor._s_p._submitData=submitData;
@@ -383,7 +394,7 @@ function initForeColors() {
 		});
 	}
 	unsafeWindow.TED.EditorCore.prototype.submitValidHTML.push('span');	// allow font in Lzl
-	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',fix);
+	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',{before:fix});
 	lzl_efilters.push(fix);
 }
 
@@ -405,30 +416,30 @@ function initOverlay() {
 		} else t.html('');
 	}
 	// 普通弹窗
-	//utils.hook(unsafeWindow.TED.Overlay.prototype,'open',null,function(){		// 所有弹窗：包括楼中楼
-	utils.hook(unsafeWindow.rich_postor._editor.overlay,'open',null,function(){		// 仅主输入框的弹窗
+	//utils.hook(unsafeWindow.TED.Overlay.prototype,'open',{after:function(){		// 所有弹窗：包括楼中楼
+	utils.hook(unsafeWindow.rich_postor._editor.overlay,'open',{after:function(){		// 仅主输入框的弹窗
 		if(this.isOpen) fixLocation($(this.holder));
-	});
-	utils.hook(unsafeWindow.TED.Overlay.prototype,'close',null,function(){t.html('');});
+	}});
+	utils.hook(unsafeWindow.TED.Overlay.prototype,'close',{after:function(){t.html('');}});
 	// 涂鸦窗口
-	utils.hook(unsafeWindow.TED.Editor.prototype,'toolbarcmd_picasso',null,function(){
+	utils.hook(unsafeWindow.TED.Editor.prototype,'toolbarcmd_picasso',{after:function(){
 		if(this.overlay.isOpen) {
 			fixLocation($(this.overlay.holder));
 			this.overlay.picassoPanel.sketchpad.refreshPosition();
 		}
-	});
+	}});
 	// 附件窗口
 	var o=unsafeWindow.rich_postor._editor.editorPlugins.idisk;
 	if(o) {
 		o=o.overlay;
 		o.$holder.css('display','none');
-		utils.hook(unsafeWindow.rich_postor._editor,'toolbarcmd_idisk',null,function(r,m){
+		utils.hook(unsafeWindow.rich_postor._editor,'toolbarcmd_idisk',{after:function(f,r,m){
 			if(o.isOpen) {
 				o.$holder.css({display:'block',top:m[0].offsetTop+32,bottom:'auto',left:m[0].offsetLeft-350});
 				fixLocation(o.$holder);
 			}
-		});
-		utils.hook(o,'close',function(){this.$holder.css('display','none');});
+		}});
+		utils.hook(o,'close',{before:function(){this.$holder.css('display','none');}});
 	}
 }
 // 楼中楼初始化
@@ -453,11 +464,11 @@ function initLzL() {
 		fixLzl();lzl_fix.forEach(function(i){i();});
 	}
 	lzl_init.forEach(function(i){i();});
-	utils.hook(unsafeWindow.SimplePostor.prototype,'_buildNormalEditor',null,fixLzl);
-	utils.hook(unsafeWindow.TED.SimpleEditor.prototype,'filteSubmitHTML',lzl_efilters);
-	utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',null,function(d){
-		d=this._data;lzl_filters.forEach(function(f){d.content=f(d.content);});
-	});
+	utils.hook(unsafeWindow.SimplePostor.prototype,'_buildNormalEditor',{after:fixLzl});
+	utils.hook(unsafeWindow.TED.SimpleEditor.prototype,'filteSubmitHTML',{before:lzl_efilters});
+	utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',{after:function(){
+		var d=this._data;lzl_filters.forEach(function(f){d.content=f(d.content);});
+	}});
 }
 
 // 以下为模块调用，可将不需要的模块注释，不要改变顺序
