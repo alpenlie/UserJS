@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.10.1
+// @version	2.5.10.2
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -378,7 +378,7 @@ function initCall() {
 }
 
 // 字体颜色初始化
-function initForeColors() {
+function initFont() {
 	utils.colors={red:'#e10602'};
 	utils.switchColor=function(cr,cs) {
 		document.execCommand('forecolor',false,document.queryCommandValue('forecolor').replace(/\s/g,'')==cr?'#333333':cs);
@@ -391,9 +391,12 @@ function initForeColors() {
 					e.replaceWith('<span class="edit_font_color">'+i+'</span>');
 					break;
 			}
+		}).end().find('b').each(function(i,e){
+			e=$(e);i=e.html();e.replaceWith('<strong>'+i+'</strong>');
 		});
 	}
-	unsafeWindow.TED.EditorCore.prototype.submitValidHTML.push('span');	// allow font in Lzl
+	var p=unsafeWindow.TED.EditorCore.prototype;
+	p.submitValidHTML=p.submitValidHTML.concat(['span','strong']);	// allow font in Lzl
 	utils.hook(unsafeWindow.rich_postor._editor,'filteSubmitHTML',{before:fix});
 	lzl_efilters.push(fix);
 }
@@ -466,8 +469,11 @@ function initLzL() {
 	lzl_init.forEach(function(i){i();});
 	utils.hook(unsafeWindow.SimplePostor.prototype,'_buildNormalEditor',{after:fixLzl});
 	utils.hook(unsafeWindow.TED.SimpleEditor.prototype,'filteSubmitHTML',{before:lzl_efilters});
-	utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',{after:function(){
-		var f=arguments.callee,d=this._data;lzl_filters.forEach(function(i){d.content=i(f,d.content);});
+	utils.hook(unsafeWindow.SimplePostor.prototype,'_getHtml',{before:function(f){
+		f.hookStop();return this._se.getHtml();
+	}});
+	utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',{after:function(f,d){
+		lzl_filters.forEach(function(i){d.content=i(f,d.content);});
 	}});
 }
 
@@ -487,7 +493,7 @@ if($&&PageData&&PageData.user) utils.fixer(function(){	// 出错反馈按钮
 			initSpaceKeep();		// 空格显示修复
 			initAddWater();			// 灌水+尾巴
 			initCall();			// 召唤增强，召唤列表
-			initForeColors();		//初始化：字体颜色
+			initFont();		//初始化：高级字体
 			initOverlay();			// 优化弹窗
 			//utils.notice(4,'Unicode编码和蓝字被屏蔽得妥妥的，暂时不能用了。。。\n　　　　——Gerald <gera2ld@163.com>');
 		}
