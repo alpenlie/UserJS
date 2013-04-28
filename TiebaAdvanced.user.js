@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.10
+// @version	2.5.10.1
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -467,7 +467,7 @@ function initLzL() {
 	utils.hook(unsafeWindow.SimplePostor.prototype,'_buildNormalEditor',{after:fixLzl});
 	utils.hook(unsafeWindow.TED.SimpleEditor.prototype,'filteSubmitHTML',{before:lzl_efilters});
 	utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',{after:function(){
-		var d=this._data;lzl_filters.forEach(function(f){d.content=f(d.content);});
+		var f=arguments.callee,d=this._data;lzl_filters.forEach(function(i){d.content=i(f,d.content);});
 	}});
 }
 
