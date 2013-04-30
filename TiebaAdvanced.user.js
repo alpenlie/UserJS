@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.10.2
+// @version	2.5.10.3
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -369,9 +369,6 @@ function initCall() {
 				f.hookStop();var d=0,b=this._getData(),a=b.content;delay();
 			}
 		}});
-	});
-	lzl_fix.push(function(){
-		unsafeWindow.LzlEditor._s_p._submitData=submitData;
 	});
 	var o=$('<span title="召唤" unselectable="on"></span>'),j=$('#j_p_postlist');
 	utils.addPButton(o,['lzl_panel_call'],utils.addPopup(j,null,loadLists).ontoggle,{keys:['click']});
