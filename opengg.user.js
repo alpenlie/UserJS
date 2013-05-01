@@ -5,7 +5,6 @@
 // @description 在线视频去广告
 // @version 1.0
 // @match *://*/*
-// @run-at	document-start
 // ==/UserScript==
 
 /*
@@ -22,115 +21,112 @@
  */
 
 (function(document) {
-    var loader = 'http://lovejiani.cdn.duapp.com/kafan/loader.swf';
-    var ku6 = 'http://lovejiani.cdn.duapp.com/kafan/ku6.swf';
-    var iqiyi = 'http://lovejiani.cdn.duapp.com/kafan/iqiyi.swf';
-    var iqiyi5 = 'http://lovejiani.cdn.duapp.com/kafan/iqiyi5.swf';
-    var tudou = 'http://lovejiani.cdn.duapp.com/kafan/tudou.swf';
-    var letv = 'http://lovejiani.cdn.duapp.com/kafan/letv.swf';
-    var players = {
-        'youku': {
-            find: /http:\/\/static\.youku\.com(\/v[\d\.]+)?\/v\/swf\/(loader|q?player[^\.]*)\.swf/i,
-	        replace: loader
-        },
-        'youku_out': {
-            find: /http:\/\/player\.youku\.com\/player\.php\/.*sid\/([\w=]+).*\.swf/i,      
-	        replace: loader + '?showAd=0&VideoIDS=$1'
-        },
-        'ku6': {
-            find: /http:\/\/player\.ku6cdn\.com\/default\/.*\/\d+\/player\.swf/i,
-            replace: ku6
-        },
-	    'ku6_out': {
-            find: /http:\/\/player\.ku6\.com\/(inside|refer)\/([^\/]+)\/v\.swf.*/i,
-            replace: ku6 + '?vid=$2'
-        },
-        'letv1': {
-            find: /http:\/\/.*letv[\w]*\.com\/[^\.]*\/.*player\/((?!Live).*)Player[^\.]*\.swf/i,
-            replace: letv
-        },
-        'letv2': {
-            find: /http:\/\/.*letv[\w]*\.com\/.*player[^\.]*\.swf\?v_list=[\d]/i,
-            replace: letv
-        },
-        'letv3': {
-            find: /http:\/\/.*letv[\w]*\.com\/.*\/v_list=[\d]*\/*\.swf/i,
-            replace: letv
-        },
-        'tudou': {
-            find: /http:\/\/js\.tudouui\.com\/.*player[^\.]*\.swf/i,
-            replace: tudou
-        },
-        'tudou_out': {
-            find: /http:\/\/www\.tudou\.com\/v\/\w+\/v\.swf|http:\/\/www\.tudou\.com\/[a-z]\/.*resourceId=(\w+)\/v\.swf/i,
-            replace: tudou + '?tvcCode=-1&autostart=false'
+		var loader = 'http://lovejiani.cdn.duapp.com/kafan/loader.swf';
+		var ku6 = 'http://lovejiani.cdn.duapp.com/kafan/ku6.swf';
+		var iqiyi = 'http://lovejiani.cdn.duapp.com/kafan/iqiyi.swf';
+		var iqiyi5 = 'http://lovejiani.cdn.duapp.com/kafan/iqiyi5.swf';
+		var tudou = 'http://lovejiani.cdn.duapp.com/kafan/tudou.swf';
+		var letv = 'http://lovejiani.cdn.duapp.com/kafan/letv.swf';
+		var players = {
+				'youku': {
+						find: /http:\/\/static\.youku\.com(\/v[\d\.]+)?\/v\/swf\/(loader|q?player[^\.]*)\.swf/i,
+					replace: loader
+				},
+				'youku_out': {
+						find: /http:\/\/player\.youku\.com\/player\.php\/.*sid\/([\w=]+).*\.swf/i,      
+					replace: loader + '?showAd=0&VideoIDS=$1'
+				},
+				'ku6': {
+						find: /http:\/\/player\.ku6cdn\.com\/default\/.*\/\d+\/player\.swf/i,
+						replace: ku6
+				},
+			'ku6_out': {
+						find: /http:\/\/player\.ku6\.com\/(inside|refer)\/([^\/]+)\/v\.swf.*/i,
+						replace: ku6 + '?vid=$2'
+				},
+				'letv1': {
+						find: /http:\/\/.*letv[\w]*\.com\/[^\.]*\/.*player\/((?!Live).*)Player[^\.]*\.swf/i,
+						replace: letv
+				},
+				'letv2': {
+						find: /http:\/\/.*letv[\w]*\.com\/.*player[^\.]*\.swf\?v_list=[\d]/i,
+						replace: letv
+				},
+				'letv3': {
+						find: /http:\/\/.*letv[\w]*\.com\/.*\/v_list=[\d]*\/*\.swf/i,
+						replace: letv
+				},
+				'tudou': {
+						find: /http:\/\/js\.tudouui\.com\/.*player[^\.]*\.swf/i,
+						replace: tudou
+				},
+				'tudou_out': {
+						find: /http:\/\/www\.tudou\.com\/v\/\w+\/v\.swf|http:\/\/www\.tudou\.com\/[a-z]\/.*resourceId=(\w+)\/v\.swf/i,
+						replace: tudou + '?tvcCode=-1&autostart=false'
 			//replace: tudou + '?tvcCode=-1'
-        },
-        'iqiyi': {
-            find: /http:\/\/www\.iqiyi\.com\/player\/\d+\/Player\.swf/i,
-            replace: iqiyi
-        },
-        'iqiyi_out': {
-            //find: /http:\/\/player\.video\.i?qiyi\.com\/([^\/]*)\/.*/,
-	        find: /http:\/\/(player|dispatcher)\.video\.i?qiyi\.com\/(.*[\?&]vid=)?([^\/&]+).*/i,
-            replace: iqiyi5 + '?vid=$3'
-        }
-    };
+				},
+				'iqiyi': {
+						find: /http:\/\/www\.iqiyi\.com\/player\/\d+\/Player\.swf/i,
+						replace: iqiyi
+				},
+				'iqiyi_out': {
+						//find: /http:\/\/player\.video\.i?qiyi\.com\/([^\/]*)\/.*/,
+					find: /http:\/\/(player|dispatcher)\.video\.i?qiyi\.com\/(.*[\?&]vid=)?([^\/&]+).*/i,
+						replace: iqiyi5 + '?vid=$3'
+				}
+		};
 
-    function replace(elem) {
-        var player = elem.data || elem.src;
-        if(!player) return;
+		function replace(elem) {
+				var player = elem.data || elem.src;
+				if(!player) return;
 
-        var i, find, replace, isReplacing = false;
-        for(i in players) {
-            find = players[i].find;
-            if(find.test(player)) {
-                replace = players[i].replace;
-                
-                preHandle();
+				var i, find, replace, isReplacing = false;
+				for(i in players) {
+						find = players[i].find;
+						if(find.test(player)) {
+								replace = players[i].replace;
+								preHandle();
+								if(!isReplacing) reallyReplace();
+								break;
+						}
+				}
 
-                if(!isReplacing) {
-                    reallyReplace();
-                }
-                break;
-            }
-        }
+				function preHandle() {
+						if(i == 'iqiyi' && document.querySelector('span[data-flashplayerparam-flashurl]')) {
+								replace = iqiyi5;
+						} else if(i == 'tudou_out') {
+								var match = player.match(/(iid|youkuId)=[^\/]+/i);
+								if(match) {
+										 replace += '&' + match[0];
+								} else {
+										isReplacing = true;
+										var icode = player.match(/\/([^\/]{11})\/.*v\.swf/i);
+										if(icode) {
+												GM_xmlhttpRequest({
+														method: 'GET',
+														url: 'http://api.tudou.com/v3/gw?method=item.info.get&appKey=myKey&format=json&itemCodes=' + icode[1],
+														onload: function(response) {
+																var obj = eval('(' + response.responseText + ')');
+																if(obj) {
+																		replace += '&iid=' + obj['multiResult']['results'][0]['itemId'];
+																		reallyReplace();
+																}
+														}
+												});
+										}
+								}
+						}
+				}
 
-        function preHandle() {
-            if(i == 'iqiyi' && document.querySelector('span[data-flashplayerparam-flashurl]')) {
-                replace = iqiyi5;
-            } else if(i == 'tudou_out') {
-                var match = player.match(/(iid|youkuId)=[^\/]+/i);
-                if(match) {
-                     replace += '&' + match[0];
-                } else {
-                    isReplacing = true;
-                    var icode = player.match(/\/([^\/]{11})\/.*v\.swf/i);
-                    if(icode) {
-                        GM_xmlhttpRequest({
-                            method: 'GET',
-                            url: 'http://api.tudou.com/v3/gw?method=item.info.get&appKey=myKey&format=json&itemCodes=' + icode[1],
-                            onload: function(response) {
-                                var obj = eval('(' + response.responseText + ')');
-                                if(obj) {
-                                    replace += '&iid=' + obj['multiResult']['results'][0]['itemId'];
-                                    reallyReplace();
-                                }
-                            }
-                        });
-                    }
-                }
-            }
-        }
-
-        function reallyReplace() {
-            elem.data && (elem.data = elem.data.replace(find, replace)) || elem.src && ((elem.src = elem.src.replace(find, replace)) && (elem.style.display = 'block'));
-        }
-    }
-		document.addEventListener('DOMNodeInserted',function(e){
-			var o=e.currentTarget;
+				function reallyReplace() {
+						elem.data && (elem.data = elem.data.replace(find, replace)) || elem.src && ((elem.src = elem.src.replace(find, replace)) && (elem.style.display = 'block'));
+				}
+		}
+		function getElements(o){
 			if(o.querySelectorAll) Array.prototype.forEach.call(o.querySelectorAll('object,embed'),replace);
-		},false);
+		}
+		getElements(document);
+		document.addEventListener('DOMNodeInserted',function(e){getElements(e.currentTarget);},false);
 })(window.document);
 
 (function(a){
