@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.10.3
+// @version	2.5.10.4
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	https://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -223,10 +223,7 @@ function initAddWater() {
 // 保留开头和末尾的空格
 function initSpaceKeep() {
 	function fixSpace(f,r) {return r.replace(/^&nbsp;/,'　').replace(/&nbsp;$/,' 　');}
-	// 主编辑框
-	utils.hook(unsafeWindow.rich_postor._editor,'getHtml',{after:fixSpace});
-	// 楼中楼
-	lzl_filters.push(fixSpace);
+	utils.hook(unsafeWindow.TED.EditorCore.prototype,'getHtml',{after:fixSpace});
 }
 // 空格强制显示
 function initSpaceFix() {
