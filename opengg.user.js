@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name OpenGG
-// @namespace http://gera2ld.blog.163.com/
-// @author Gerald
-// @description 在线视频去广告
-// @version 1.0
-// @match *://*/*
+// @name	OpenGG
+// @namespace	http://gera2ld.blog.163.com/
+// @author	Gerald <gera2ld@163.com>
+// @description	在线视频去广告
+// @version	1.0
+// @match	*://*/*
 // ==/UserScript==
 
 /*
@@ -122,16 +122,15 @@
 						elem.data && (elem.data = elem.data.replace(find, replace)) || elem.src && ((elem.src = elem.src.replace(find, replace)) && (elem.style.display = 'block'));
 				}
 		}
-		function getElements(o){
+		function replaceElements(o){
 			if(o.querySelectorAll) Array.prototype.forEach.call(o.querySelectorAll('object,embed'),replace);
 		}
-		getElements(document);
-		document.addEventListener('DOMNodeInserted',function(e){getElements(e.currentTarget);},false);
+		replaceElements(document);
+		document.addEventListener('DOMNodeInserted',function(e){replaceElements(e.currentTarget);},false);
 })(window.document);
 
 (function(a){
 	if(!a) return;
-	var ua = navigator.userAgent.toLowerCase();
 	var url = 'http://api.bilibili.tv/view?type=json&id=' + a[1] + '&page=' + (a[2] || 1);
 	var vURL = 'http://interface.bilibili.tv/playurl?otype=JSON&type=FLV&cid='
 	var list = document.createElement("select");
