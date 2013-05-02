@@ -8,7 +8,7 @@
 // @homepage	https://userscripts.org/scripts/show/152920
 // @downloadURL	https://userscripts.org/scripts/source/152920.user.js
 // @updateURL	https://userscripts.org/scripts/source/152920.meta.js
-// @include	http://*.qidian.com/*
+// @match	http://*.qidian.com/*
 // @grant	GM_openInTab
 // ==/UserScript==
 
