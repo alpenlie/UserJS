@@ -49,8 +49,8 @@ function initPanelCall() {
 
 var mask=$('<div class=ge_mask>').appendTo('body');	// Mask layer
 // Arrays for Lzl initiation
-var lzl_buttons=[],lzl_styles=[],lzl_filters=[],lzl_efilters=[],lzl_init=[],lzl_fix=[]; // 新增楼中楼按钮
-utils.addPButton=function(o,c,m,a) {
+var lzl_init=[],lzl_buttons=[],lzl_styles=[],/*lzl_filters=[],*/lzl_efilters=[];
+utils.addPButton=function(o,c,m,a) { // 新增楼中楼按钮
 	lzl_styles=lzl_styles.concat(c);o.addClass(c[0]);
 	if(!a) a={};if(!a.after) a.after='.lzl_panel_submit';
 	lzl_buttons.push([o,m,a]);
@@ -61,7 +61,7 @@ utils.addPButton=function(o,c,m,a) {
 function initPostManager() {
 	if(utils.postManager) return;
 	utils.addStyle('.tmedit{border:1px solid;overflow:auto;background:transparent;}.fleft{float:left;}.fright{float:right;}');
-	var tm=$('<div style="position:fixed;display:none;left:100px;right:100px;background:lightgray;color:#333;padding:20px;border:2px solid #ccc;border-radius:20px;shadow:0 1px 5px #333;z-index:999;}">').appendTo('body');
+	var tm=$('<div style="position:fixed;display:none;left:100px;right:100px;background:white;color:#333;padding:20px;border:2px solid #ccc;border-radius:20px;shadow:0 1px 5px #333;z-index:999;}">').appendTo('body');
 	tm.listItems=function(t,e,x,s){
 		var d=[];
 		if(x) d.push('<option>'+x+'</option>');
@@ -457,18 +457,16 @@ function initLzL() {
 	t='.font_strong,.font_color{background:url("http://tb2.bdstatic.com/tb/editor/v2/font_style.png") no-repeat transparent;height:20px;width:22px;}.font_color{background-position:0 -20px;}';
 	if(lzl_styles.length) t+='.'+lzl_styles.join(',.')+'{margin:2px 1px;float:right;}';
 	utils.addStyle(t);
-	if(unsafeWindow.LzlEditor._s_p) {
-		fixLzl();lzl_fix.forEach(function(i){i();});
-	}
+	if(unsafeWindow.LzlEditor._s_p) fixLzl();
 	lzl_init.forEach(function(i){i();});
 	utils.hook(unsafeWindow.SimplePostor.prototype,'_buildNormalEditor',{after:fixLzl});
 	utils.hook(unsafeWindow.TED.SimpleEditor.prototype,'filteSubmitHTML',{before:lzl_efilters});
 	utils.hook(unsafeWindow.SimplePostor.prototype,'_getHtml',{before:function(f){
 		f.hookStop();return this._se.getHtml();
 	}});
-	utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',{after:function(f,d){
+	/*utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',{after:function(f,d){
 		lzl_filters.forEach(function(i){d.content=i(f,d.content);});
-	}});
+	}});*/
 }
 
 // 以下为模块调用，可将不需要的模块注释，不要改变顺序

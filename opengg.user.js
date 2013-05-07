@@ -2,9 +2,10 @@
 // @name	OpenGG
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
-// @description	在线视频去广告
+// @description	在线视频去广告，基于OpenGG
 // @version	1.0
 // @match	*://*/*
+// @run-at	document-start
 // ==/UserScript==
 
 /*
@@ -120,12 +121,13 @@
 
 				function reallyReplace() {
 						elem.data && (elem.data = elem.data.replace(find, replace)) || elem.src && ((elem.src = elem.src.replace(find, replace)) && (elem.style.display = 'block'));
+						//elem.outerHTML=elem.outerHTML;
 				}
 		}
 		function replaceElements(o){
 			if(o.querySelectorAll) Array.prototype.forEach.call(o.querySelectorAll('object,embed'),replace);
 		}
-		replaceElements(document);
+		//replaceElements(document);
 		document.addEventListener('DOMNodeInserted',function(e){replaceElements(e.currentTarget);},false);
 })(window.document);
 
