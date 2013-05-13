@@ -487,7 +487,7 @@ if($&&PageData&&PageData.user) utils.fixer(function(){	// 出错反馈按钮
 			initCall();			// 召唤增强，召唤列表
 			initFont();		//初始化：高级字体
 			initOverlay();			// 优化弹窗
-			//utils.notice(4,'Unicode编码和蓝字被屏蔽得妥妥的，暂时不能用了。。。\n　　　　——Gerald <gera2ld@163.com>');
+			//notice(4,'Unicode编码和蓝字被屏蔽得妥妥的，暂时不能用了。。。\n　　　　——Gerald <gera2ld@163.com>');
 		}
 		if(unsafeWindow.LzlEditor) {	// 最后初始化楼中楼，使楼中楼支持以上功能
 			initLzL();		//初始化：支持已加载的功能
