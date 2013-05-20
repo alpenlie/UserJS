@@ -2,10 +2,10 @@
 // @name	Tieba Advanced
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
-// @icon	https://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.10.4
+// @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
+// @version	2.5.10.5
 // @description	贴吧增强 - Gerald倾情打造
-// @homepage	https://userscripts.org/scripts/show/152918
+// @homepage	http://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
 // @downloadURL	https://userscripts.org/scripts/source/152918.user.js
 // @include	http://tieba.baidu.com/*
@@ -401,44 +401,6 @@ function initLzlFix() {
 		if((e=$(e)).children('.lzl_more:hidden').length) e.children('.j_pager:hidden').show();
 	});
 }
-// 优化弹窗
-function initOverlay() {
-	var t=utils.addStyle();
-	function fixLocation(H) {
-		var f=H.offset(),h=H.height();
-		if(f.top+h>pageYOffset+innerHeight) {	// 向上弹出
-			H.css({top:'auto',bottom:H.parent().height()-H.position().top+40});
-			t.html('.tb-editor-overlay .arrow{top:auto !important;bottom:-8px !important;transform:scale(-1);-webkit-transform:scale(-1);}');
-			return true;
-		} else t.html('');
-	}
-	// 普通弹窗
-	//utils.hook(unsafeWindow.TED.Overlay.prototype,'open',{after:function(){		// 所有弹窗：包括楼中楼
-	utils.hook(unsafeWindow.rich_postor._editor.overlay,'open',{after:function(){		// 仅主输入框的弹窗
-		if(this.isOpen) fixLocation($(this.holder));
-	}});
-	utils.hook(unsafeWindow.TED.Overlay.prototype,'close',{after:function(){t.html('');}});
-	// 涂鸦窗口
-	utils.hook(unsafeWindow.TED.Editor.prototype,'toolbarcmd_picasso',{after:function(){
-		if(this.overlay.isOpen) {
-			fixLocation($(this.overlay.holder));
-			this.overlay.picassoPanel.sketchpad.refreshPosition();
-		}
-	}});
-	// 附件窗口
-	var o=unsafeWindow.rich_postor._editor.editorPlugins.idisk;
-	if(o) {
-		o=o.overlay;
-		o.$holder.css('display','none');
-		utils.hook(unsafeWindow.rich_postor._editor,'toolbarcmd_idisk',{after:function(f,r,m){
-			if(o.isOpen) {
-				o.$holder.css({display:'block',top:m[0].offsetTop+32,bottom:'auto',left:m[0].offsetLeft-350});
-				fixLocation(o.$holder);
-			}
-		}});
-		utils.hook(o,'close',{before:function(){this.$holder.css('display','none');}});
-	}
-}
 // 楼中楼初始化
 function initLzL() {
 	// 倒序添加按钮
@@ -468,9 +430,20 @@ function initLzL() {
 		lzl_filters.forEach(function(i){d.content=i(f,d.content);});
 	}});*/
 }
+function fixer(func){
+	try{func();}catch(e){
+		var f=$('<div>').appendTo('body').css({width:'120px',position:'fixed',left:0,top:0,display:'none','text-align':'center','z-index':999});
+		$('<div>出错了！如需反馈请复制以上信息</div>').appendTo(f).css('color','white').add(
+		$('<a href=http://gera2ld.blog.163.com/blog/static/1880172962013012101456740>点此反馈</a>').appendTo(f).css('color','yellow')
+		).css({background:'purple',margin:'1px',padding:'10px','border-radius':'5px',display:'block'});
+		var m=location.href+'\n'+e.name+': '+e.message+'\n'+(e.stacktrace||e.stack);
+		if(window.console) console.log(m);
+		f.prepend($('<textarea style="height:200px;">').val(m.slice(0,1024)).mouseover(function(e){this.select();})).show();
+	}
+}
 
 // 以下为模块调用，可将不需要的模块注释，不要改变顺序
-if($&&PageData&&PageData.user) utils.fixer(function(){	// 出错反馈按钮
+if($&&PageData&&PageData.user) fixer(function(){	// 出错反馈按钮
 	// 以下模块无需登录
 	if(PageData.thread) {	// 以下模块仅在帖子浏览页面加载
 		initSpaceFix();			// 空格显示修复
@@ -486,7 +459,6 @@ if($&&PageData&&PageData.user) utils.fixer(function(){	// 出错反馈按钮
 			initAddWater();			// 灌水+尾巴
 			initCall();			// 召唤增强，召唤列表
 			initFont();		//初始化：高级字体
-			initOverlay();			// 优化弹窗
 			//notice(4,'Unicode编码和蓝字被屏蔽得妥妥的，暂时不能用了。。。\n　　　　——Gerald <gera2ld@163.com>');
 		}
 		if(unsafeWindow.LzlEditor) {	// 最后初始化楼中楼，使楼中楼支持以上功能
