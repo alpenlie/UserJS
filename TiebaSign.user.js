@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	1.2
+// @version	1.2.1
 // @description	贴吧签到
 // @homepage	http://userscripts.org/scripts/show/154159
 // @downloadURL	https://userscripts.org/scripts/source/154159.user.js
@@ -80,8 +80,8 @@ function visitSign(){
 	if(GM_getValue('wap')&&!$('#balv_dolike').length)	// “喜欢”才使用WAP签到
 		wapSign(PageData.forum.name,function(d){
 			if(d.err) return;
-			j.removeClass('j_cansign signstar_btn').addClass('signstar_signed').html('<span class="sign_keep_span">WAP签到成功</span>');
-			$('#signstar_wrapper').addClass('signstar_wrapper_signed');
+			j.removeClass('j_cansign signstar_btn').addClass('signstar_signed').html('<span class="sign_keep_span">WAP成功</span>');
+			$('#signstar_wrapper').addClass('signstar_wrapper_signed sign_box_bright_signed');
 		});
 	else {
 		var Sign_rank=unsafeWindow.Sign_rank;
