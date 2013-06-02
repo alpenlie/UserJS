@@ -138,7 +138,7 @@ function initPostManager() {
 		if(t) {tm.list.cur.name=t;ti.children('option:eq('+tm.list.last+')').text(t);}
 	});
 	var tt=$('<select>').appendTo($('<label>类型：</label>').appendTo(tl)).html('<option value="s" checked>普通字串</option><option value="h">HTML代码</option><option value="H">HTML随机</option><option value="j">JS代码</option>').change(function(){liveShow();saveItem();});
-	$('<a href=http://gera2ld.blog.163.com/blog/static/18801729620132293204924/ target=_blank title="帮助">(?)</a>').appendTo(tl);
+	$('<a href=https://github.com/gera2ld/UserJS/wiki/TiebaAdvanced#wiki-advanced target=_blank title="帮助">(?)</a>').appendTo(tl);
 	var tr=$('<div class=fright></div>').appendTo(tm);
 	$('<span class=ge_sbtn>添加</span>').appendTo(tr).click(tm.newItem);
 	$('<span class=ge_sbtn>删除</span>').appendTo(tr).click(function() {
@@ -434,7 +434,7 @@ function fixer(func){
 	try{func();}catch(e){
 		var f=$('<div>').appendTo('body').css({width:'120px',position:'fixed',left:0,top:0,display:'none','text-align':'center','z-index':999});
 		$('<div>出错了！如需反馈请复制以上信息</div>').appendTo(f).css('color','white').add(
-		$('<a href=http://gera2ld.blog.163.com/blog/static/1880172962013012101456740>点此反馈</a>').appendTo(f).css('color','yellow')
+		$('<a href=https://userscripts.org/scripts/discuss/152918>点此反馈</a>').appendTo(f).css('color','yellow')
 		).css({background:'purple',margin:'1px',padding:'10px','border-radius':'5px',display:'block'});
 		var m=location.href+'\n'+e.name+': '+e.message+'\n'+(e.stacktrace||e.stack);
 		if(window.console) console.log(m);
