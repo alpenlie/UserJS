@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	1.0.4
+// @version	1.0.5
 // @description	贴吧图化 - Gerald倾情打造
 // @homepage	http://userscripts.org/scripts/show/156579
 // @downloadURL	https://userscripts.org/scripts/source/156579.user.js
@@ -121,17 +121,20 @@ if(PageData&&PageData.user&&PageData.user.is_login&&unsafeWindow.rich_postor) {
 	}
 	var u=$('<div class="ge_sbtn ge_disabled" style="margin:0 0 2px;">图化组件初始化失败，点击重试</div>').appendTo(op).click(init);
 	init();
+	function innerText(o) {
+		return $('<div>').append(o.childNodes).html(function(i,h){return h.replace(/<br>(<\/p>)?|<\/p>/gi,'\n');}).text().replace(/\s+$/,'');
+	}
 	function word2Image(){
 		undo=unsafeWindow.rich_postor._editor.editArea.innerHTML;
 		bUndo.removeClass('ge_disabled');
 		var fz=parseInt($('#w2isize').val()),r=unsafeWindow.rich_postor._editor.savedRange,s,loading=$('<img title="双击撤销">').attr('src',loadingURL);
 		if(r&&r.toString()) {
-			s=utils.innerText(r.extractContents());
+			s=innerText(r.extractContents());
 			if(!/\S/.test(s)) return;
 			r.insertNode(loading[0]);
 		} else {
 			r=unsafeWindow.rich_postor._editor.editArea;
-			s=utils.innerText(r);
+			s=innerText(r);
 			if(!/\S/.test(s)) return;
 			$(r).html(loading);
 		}
