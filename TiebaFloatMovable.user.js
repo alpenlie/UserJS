@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	1.1.2
+// @version	1.1.3
 // @description	贴吧可移动悬浮窗
 // @homepage	http://userscripts.org/scripts/show/156576
 // @downloadURL	https://userscripts.org/scripts/source/156576.user.js
@@ -124,6 +124,14 @@ function showOptions(){
 		},
 	});
 }
+function fixIdisk(o){	// 附件窗口
+	if(o=unsafeWindow.rich_postor._editor.editorPlugins.idisk) {
+		o=o.overlay;
+		o.$holder.css('display','none');
+		utils.hook(o,'open',{before:function(){this.$holder.css('display','');}});
+		utils.hook(o,'close',{before:function(){this.$holder.css('display','none');}});
+	}
+}
 
 if(PageData&&PageData.user&&unsafeWindow.rich_postor) {
 	var s='\
@@ -142,6 +150,7 @@ if(PageData&&PageData.user&&unsafeWindow.rich_postor) {
 	mx=$('<div style="position:absolute;top:0;background:inherit;border:1px solid gray;padding-bottom:40px;cursor:pointer;" title="最小化">▶</div>').appendTo(ep).hide().click(minify);
 	mx.css('left',-mx.outerWidth());
 	switchFloat();
+	fixIdisk();
 	GM_registerMenuCommand('悬浮窗设置',showOptions);
 	notice(1,'欢迎使用贴吧悬浮窗脚本！\n功能简介：\n1. 可悬浮编辑窗，悬浮后可移动；\n2. 双击悬浮窗口框架可展开或精简编辑框；\n3. 悬浮窗口支持自动隐藏到右下角，鼠标移至右下角即可呼出。');
 }
