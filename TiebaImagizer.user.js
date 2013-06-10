@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	1.0.5
+// @version	1.1
 // @description	贴吧图化 - Gerald倾情打造
 // @homepage	http://userscripts.org/scripts/show/156579
 // @downloadURL	https://userscripts.org/scripts/source/156579.user.js
@@ -87,7 +87,7 @@ function initColorPanel() {
 	};
 }
 if(PageData&&PageData.user&&PageData.user.is_login&&unsafeWindow.rich_postor) {
-	var st=utils.addStyle(),undo=null,op=utils.addPopup($('#edit_parent'),utils.addSButton('图化')).panel;
+	var st=utils.addStyle(),content=null,op=utils.addPopup($('#edit_parent'),utils.addSButton('图化')).panel;
 	function getStyle() {
 		var s={},t=[];
 		if($('#w2iitalic').prop('checked')) t.push('italic');
@@ -99,19 +99,37 @@ if(PageData&&PageData.user&&PageData.user.is_login&&unsafeWindow.rich_postor) {
 		s.background=$('#w2iabgclr').prop('checked')?cb.val():'transparent';
 		return s;
 	}
+	function undo(){
+		if(!content) return;
+		unsafeWindow.rich_postor._editor.editArea.innerHTML=content;content=null;
+		bUndo.addClass('ge_disabled');
+	}
 	function init(){
 		initImageLoader(function(){
 			utils.uploadImage=function(data,node) {
+				function error(a){
+					alert('图片上传发生错误！');
+					undo();
+					unbindEvents();
+				}
 				function uploaded(a,d) {
 					var c=JSON.parse(d);
-					if(c.error_code) alert('图片上传错误！'); else {
-						var e='http://imgsrc.baidu.com/forum/pic/item/'+c.info.pic_id_encode+'.png';
+					if(c.error_code) error(); else {
+						var e='http://imgsrc.baidu.com/forum/pic/item/'+c.info.pic_id_encode+'.jpg';
 						$(node).replaceWith('<image pic_type="5" class="BDE_Image" src="'+e+'">');
+						unbindEvents();
 					}
+				}
+				function bindEvents(){
+					unsafeWindow.FlashImageLoader.bind('uploadComplete', uploaded);
+					unsafeWindow.FlashImageLoader.bind('uploadError',error);
+				}
+				function unbindEvents(){
 					unsafeWindow.FlashImageLoader.unbind('uploadComplete', uploaded);
+					unsafeWindow.FlashImageLoader.unbind('uploadError',error);
 				}
 				$.get('/dc/common/imgtbs',function(r) {
-					unsafeWindow.FlashImageLoader.bind('uploadComplete', uploaded);
+					bindEvents();
 					unsafeWindow.FlashImageLoader.uploadBase64('http://upload.tieba.baidu.com/upload/pic',data.replace(/^data:.*?;base64,/,''),{tbs:r.data.tbs});
 				},'json');
 			};
@@ -125,7 +143,7 @@ if(PageData&&PageData.user&&PageData.user.is_login&&unsafeWindow.rich_postor) {
 		return $('<div>').append(o.childNodes).html(function(i,h){return h.replace(/<br>(<\/p>)?|<\/p>/gi,'\n');}).text().replace(/\s+$/,'');
 	}
 	function word2Image(){
-		undo=unsafeWindow.rich_postor._editor.editArea.innerHTML;
+		content=unsafeWindow.rich_postor._editor.editArea.innerHTML;
 		bUndo.removeClass('ge_disabled');
 		var fz=parseInt($('#w2isize').val()),r=unsafeWindow.rich_postor._editor.savedRange,s,loading=$('<img title="双击撤销">').attr('src',loadingURL);
 		if(r&&r.toString()) {
@@ -214,10 +232,6 @@ if(PageData&&PageData.user&&PageData.user.is_login&&unsafeWindow.rich_postor) {
 	$('<label for=w2ishadow class=ge_rsep>阴影</label>').appendTo(op);
 	utils.bindProp($('<input type=checkbox id=w2istroke>').appendTo(op),'checked','w2istroke',false,checkFont);
 	$('<label for=w2istroke class=ge_rsep>镂空</label>').appendTo(op);
-	var bUndo=$('<span class="ge_sbtn ge_disabled" title="回到最后一次图化前的状态">撤销图化</span>').appendTo(op).click(function(e){
-		if(!undo) return;
-		unsafeWindow.rich_postor._editor.editArea.innerHTML=undo;undo=null;
-		bUndo.addClass('ge_disabled');
-	});
+	var bUndo=$('<span class="ge_sbtn ge_disabled" title="回到最后一次图化前的状态">撤销图化</span>').appendTo(op).click(undo);
 	f.prop('selectedIndex',ff.last);checkFont();
 }
