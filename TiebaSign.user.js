@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	1.2.1
+// @version	1.2.2
 // @description	贴吧签到
 // @homepage	http://userscripts.org/scripts/show/154159
 // @downloadURL	https://userscripts.org/scripts/source/154159.user.js
@@ -48,7 +48,7 @@ function wapSign(name,callback){
 			var m,s;
 			if(s=r.responseText.match(/<(\w+) style="text-align:right;">(.*?)<\/\1>/)) {
 				if(s=s[2]) {
-					if(m=s.match(/<a href="(.*?)">签到<\/a>/)) return GM_xmlhttpRequest({
+					if(m=s.match(/<a href="(.*?)">签到<\/a>/)) GM_xmlhttpRequest({
 						method:'GET',
 						url:base+m[1].replace(/&amp;/g,'&'),
 						onload:function(r){
@@ -60,8 +60,7 @@ function wapSign(name,callback){
 							callback(R);
 						},
 						onerror:neterr
-					});
-					if(m=s.match(/<span >已签到<\/span>/)) {R.err=0;R.msg='已签到';}
+					}); else if(s.match(/<span >已签到<\/span>/)) {R.err=0;R.msg='已签到';}
 				} else R.err=1;
 			}
 			callback(R);
@@ -77,24 +76,13 @@ if(PageData&&PageData.user&&PageData.user.is_login) {
 }
 // 访问时自动签到
 function visitSign(){
-	if(GM_getValue('wap')&&!$('#balv_dolike').length)	// “喜欢”才使用WAP签到
+	if(GM_getValue('wap')&&!$('#balv_dolike').length)	// “喜欢”才能使用WAP签到
 		wapSign(PageData.forum.name,function(d){
 			if(d.err) return;
 			j.removeClass('j_cansign signstar_btn').addClass('signstar_signed').html('<span class="sign_keep_span">WAP成功</span>');
 			$('#signstar_wrapper').addClass('signstar_wrapper_signed sign_box_bright_signed');
 		});
-	else {
-		var Sign_rank=unsafeWindow.Sign_rank;
-		$.tb.post(Sign_rank.sign_url,{kw:PageData.forum.name,tbs:PageData.tbs,ie:'utf-8'},function(d){
-			if(d&&d.no==0) {
-				$('.j_today_signnum').html(d.data.finfo.current_rank_info.sign_count);
-				var f=PageData.forum.version>=2?2:1,b=new Date(d.data.uinfo.sign_time);
-				Sign_rank.sign_year=Sign_rank.orign_year=b.getFullYear();
-				Sign_rank.sign_month=Sign_rank.orign_month=b.getMonth()+1;
-				Sign_rank.sign_load_month(1);
-			}
-		},'json');
-	}
+	else $('.j_cansign').click();
 }
 // 从i贴吧页面自动签到所有爱逛的贴吧
 function iSign(){
