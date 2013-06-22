@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	1.2.2
+// @version	1.2.3
 // @description	贴吧签到
 // @homepage	http://userscripts.org/scripts/show/154159
 // @downloadURL	https://userscripts.org/scripts/source/154159.user.js
@@ -48,7 +48,7 @@ function wapSign(name,callback){
 			var m,s;
 			if(s=r.responseText.match(/<(\w+) style="text-align:right;">(.*?)<\/\1>/)) {
 				if(s=s[2]) {
-					if(m=s.match(/<a href="(.*?)">签到<\/a>/)) GM_xmlhttpRequest({
+					if(m=s.match(/<a href="(.*?)">签到<\/a>/)) return GM_xmlhttpRequest({
 						method:'GET',
 						url:base+m[1].replace(/&amp;/g,'&'),
 						onload:function(r){
@@ -60,7 +60,8 @@ function wapSign(name,callback){
 							callback(R);
 						},
 						onerror:neterr
-					}); else if(s.match(/<span >已签到<\/span>/)) {R.err=0;R.msg='已签到';}
+					});
+					if(s.match(/<span >已签到<\/span>/)) {R.err=0;R.msg='已签到';}
 				} else R.err=1;
 			}
 			callback(R);
