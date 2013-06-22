@@ -39,18 +39,18 @@ function wapSign(name,callback){
 	 *  1: 未开通签到
 	 *  2: 网络错误
 	 */
-	var base='http://wapp.baidu.com',R={err:-1};
+	var R={err:-1};
 	function neterr(r){R.err=2;R.msg='网络错误';callback(R);}
 	GM_xmlhttpRequest({
 		method:'GET',
-		url:base+'/f?kw='+name,
+		url:'/mo/?kw='+name,
 		onload:function(r){
 			var m,s;
 			if(s=r.responseText.match(/<(\w+) style="text-align:right;">(.*?)<\/\1>/)) {
 				if(s=s[2]) {
 					if(m=s.match(/<a href="(.*?)">签到<\/a>/)) return GM_xmlhttpRequest({
 						method:'GET',
-						url:base+m[1].replace(/&amp;/g,'&'),
+						url:m[1].replace(/&amp;/g,'&'),
 						onload:function(r){
 							r=r.responseText.match(/<span class="light">(.*?)<div/);
 							if(r) {
@@ -69,21 +69,17 @@ function wapSign(name,callback){
 		onerror:neterr
 	});
 }
-var j;
-if(PageData&&PageData.user&&PageData.user.is_login) {
-	initSetting('sign',true);initSetting('wap',true);
-	if(GM_getValue('sign')&&!PageData.user.is_black&&(j=$('#sign_mod .j_cansign')).length) visitSign();
-	if(unsafeWindow.oftenForum) iSign();
-}
 // 访问时自动签到
-function visitSign(){
-	if(GM_getValue('wap')&&!$('#balv_dolike').length)	// “喜欢”才能使用WAP签到
-		wapSign(PageData.forum.name,function(d){
-			if(d.err) return;
-			j.removeClass('j_cansign signstar_btn').addClass('signstar_signed').html('<span class="sign_keep_span">WAP成功</span>');
-			$('#signstar_wrapper').addClass('signstar_wrapper_signed sign_box_bright_signed');
-		});
-	else $('.j_cansign').click();
+function visitSign(j){
+	if(j.length) {
+		if(GM_getValue('wap')&&!$('#balv_dolike').length)	// “喜欢”才能使用WAP签到
+			wapSign(PageData.forum.name,function(d){
+				if(d.err) return;
+				j.removeClass('j_cansign signstar_btn').addClass('signstar_signed').html('<span class="sign_keep_span">WAP成功</span>');
+				$('#signstar_wrapper').addClass('signstar_wrapper_signed sign_box_bright_signed');
+			});
+		else $('.j_cansign').click();
+	}
 }
 // 从i贴吧页面自动签到所有爱逛的贴吧
 function iSign(){
@@ -112,11 +108,12 @@ function iSign(){
 		});
 		return r;
 	};
-	var s=$('<span id=signing style="color:red;margin:0 20px;display:none">正在签到...</span>').appendTo('span.head_title');
-	var l=$('<li>').addClass('nav_item').appendTo('ul.nav_bar').hover(function(){j.toggle();});
+	var s=$('<span id=signing style="color:red;margin:0 20px;display:none">正在签到...</span>').appendTo('span.head_title'),
+			l=$('<li>').addClass('nav_item').appendTo('ul.nav_bar').hover(function(){j.toggle();}),
+			j=$('<div class=nav_bar style="padding:10px;display:none;z-index:10;position:absolute;max-width:80px;background-image:none;">');
 	$('<a href=# title="自动签到“我爱逛的贴吧”。如有需要，可在通过下面的“添加”导入所有“我喜欢的贴吧”~">自动签到</a>').appendTo(l).click(sign);
 	$('<style>.nav_bar{background-color:#d0dbed;}</style>').appendTo(l);	// 设置默认背景色
-	j=$('<div class=nav_bar style="padding:10px;display:none;z-index:10;position:absolute;max-width:80px;background-image:none;">').appendTo(l);
+	j.appendTo(l);
 	bindProp($('<input type=checkbox>').prependTo($('<label title="自动签到和访问时模拟WAP签到">模拟WAP</label>').appendTo(j)),'checked','wap');
 	$('<br>').appendTo(j);
 	bindProp($('<input type=checkbox>').prependTo($('<label title="访问贴吧时自动签到">访问时签到</label>').appendTo(j)),'checked','sign');
@@ -150,6 +147,12 @@ function iSign(){
 			d=$('#always_go_list>ul>li:has(a.j_ba_link):not(:has(.forum_sign))');
 			d.children('span').remove();
 		}
-		if(d.length) setTimeout(signOne,e?0:2000); else s.hide();
+		if(d.length) setTimeout(signOne,e?0:1000); else s.hide();
 	}
+}
+
+if(PageData&&PageData.user&&PageData.user.is_login) {
+	initSetting('sign',true);initSetting('wap',true);
+	if(GM_getValue('sign')&&!PageData.user.is_black) visitSign($('#sign_mod .j_cansign'));
+	if(unsafeWindow.oftenForum) iSign();
 }
