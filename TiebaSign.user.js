@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	1.2.3
+// @version	1.2.3.1
 // @description	贴吧签到
 // @homepage	http://userscripts.org/scripts/show/154159
 // @downloadURL	https://userscripts.org/scripts/source/154159.user.js
@@ -12,7 +12,6 @@
 // @exclude	http://tieba.baidu.com/tb/*
 // @grant GM_getValue
 // @grant GM_setValue
-// @grant	GM_xmlhttpRequest
 // ==/UserScript==
 
 // 公共函数
@@ -39,34 +38,30 @@ function wapSign(name,callback){
 	 *  1: 未开通签到
 	 *  2: 网络错误
 	 */
+	function xhr(url,onload){
+		var x=new XMLHttpRequest();
+		x.open('GET',url,true);
+		x.onerror=function(){R.err=2;R.msg='网络错误';callback(R);}
+		x.onload=onload;
+		x.send();
+	}
 	var R={err:-1};
-	function neterr(r){R.err=2;R.msg='网络错误';callback(R);}
-	GM_xmlhttpRequest({
-		method:'GET',
-		url:'/mo/?kw='+name,
-		onload:function(r){
-			var m,s;
-			if(s=r.responseText.match(/<(\w+) style="text-align:right;">(.*?)<\/\1>/)) {
-				if(s=s[2]) {
-					if(m=s.match(/<a href="(.*?)">签到<\/a>/)) return GM_xmlhttpRequest({
-						method:'GET',
-						url:m[1].replace(/&amp;/g,'&'),
-						onload:function(r){
-							r=r.responseText.match(/<span class="light">(.*?)<div/);
-							if(r) {
-								R.msg=r[1].replace(/<[^>]*>/g,'');
-								if(/^签到成功/.test(R.msg)) R.err=0;
-							}
-							callback(R);
-						},
-						onerror:neterr
+	xhr('/mo/?kw='+name,function(){
+		var m,s;
+		if(s=this.responseText.match(/<(\w+) style="text-align:right;">(.*?)<\/\1>/)) {
+			if(s=s[2]) {
+				if(m=s.match(/<a href="(.*?)">签到<\/a>/))
+					return xhr(m[1].replace(/&amp;/g,'&'),function(){
+						if(m=this.responseText.match(/<span class="light">(.*?)<div/)) {
+							R.msg=m[1].replace(/<[^>]*>/g,'');
+							if(/^签到成功/.test(R.msg)) R.err=0;
+						}
+						callback(R);
 					});
-					if(s.match(/<span >已签到<\/span>/)) {R.err=0;R.msg='已签到';}
-				} else R.err=1;
-			}
-			callback(R);
-		},
-		onerror:neterr
+				if(s.match(/<span >已签到<\/span>/)) {R.err=0;R.msg='已签到';}
+			} else R.err=1;
+		}
+		callback(R);
 	});
 }
 // 访问时自动签到
