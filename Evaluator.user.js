@@ -16,7 +16,6 @@
  *  鄙视这个网站，鄙视杭州正方软件公司这个山寨玩意儿。
  */
 
-function $(i){return document.getElementById(i);}
 function URLEncode(o){
 	var d=[];
 	o.forEach(function(i){d.push(escape(i[0])+'='+escape(i[1]));});
@@ -29,6 +28,7 @@ function postData(data,callback){
 	xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
 	xhr.send(URLEncode(data));
 }
+var $=document.getElementById.bind(document);
 var all=$('kcpjform').querySelectorAll('input[idvalue]');
 var b=document.createElement('button');
 $('Position').appendChild(b);
@@ -48,6 +48,7 @@ if(!all.length){
 			i.FDJS=i.FDJS?i.FDJS.split(','):[];
 			count+=i.SKJS.length+i.FDJS.length;
 			var n=i.SKJS.length+i.FDJS.length,f=0;
+			var data=[['xkkh',i.XKKH],['kcdm',i.KCDM],['pyxx','']];
 			function callback(){
 				obj.innerHTML='('+(++f)+'/'+n+')';
 				if(!--count) b.innerHTML='评优完成';
@@ -56,7 +57,6 @@ if(!all.length){
 				l.forEach(function(i){d.push(['ids',"{'zbdm':'"+i+"','zbfz':'"+s+"'}"]);});
 				return d;
 			}
-			var data=[['xkkh',i.XKKH],['kcdm',i.KCDM],['pyxx','']];
 			i.SKJS.forEach(function(j){
 				j=j.split('@');
 				j=data.concat([['zgh',j[0]],['fldm',1]]);
