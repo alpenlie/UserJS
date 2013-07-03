@@ -3,7 +3,7 @@
 // @namespace	http://gera2ld.blog.163.com/
 // @author	Gerald <gera2ld@163.com>
 // @icon	http://s.gravatar.com/avatar/a0ad718d86d21262ccd6ff271ece08a3?s=80
-// @version	2.5.10.5
+// @version	2.5.11
 // @description	贴吧增强 - Gerald倾情打造
 // @homepage	http://userscripts.org/scripts/show/152918
 // @updateURL	https://userscripts.org/scripts/source/152918.meta.js
@@ -220,9 +220,9 @@ function initAddWater() {
 	}});
 	initTails();initWater();
 }
-// 保留开头和末尾的空格
+// 保留开头的空格
 function initSpaceKeep() {
-	function fixSpace(f,r) {return r.replace(/^&nbsp;/,'　').replace(/&nbsp;$/,' 　');}
+	function fixSpace(f,r) {return r.replace(/^&nbsp;/,'. ');}
 	utils.hook(unsafeWindow.TED.EditorCore.prototype,'getHtml',{after:fixSpace});
 }
 // 空格强制显示
@@ -328,7 +328,7 @@ function initCall() {
 	var l=/<img [^>]*?alt="召唤列表"[^>]*>/;
 	function addNames(e,n){
 		if(n.splice) n='@'+n.splice(0,10).join(' @')+' ';
-		return e.replace(l,n).replace(/ $/,' 　');
+		return e.replace(l,n);
 	}
 	// 主编辑框
 	utils.addPopup(E,utils.addTButton($('<span class="call_list" title="召唤" unselectable="on">')),loadLists);
@@ -387,6 +387,8 @@ function initFont() {
 			}
 		}).end().find('b').each(function(i,e){
 			e=$(e);i=e.html();e.replaceWith('<strong>'+i+'</strong>');
+		}).end().find('span.at').each(function(i,e){	// allow at
+			e.outerHTML=e.innerHTML;
 		});
 	}
 	var p=unsafeWindow.TED.EditorCore.prototype;
@@ -455,7 +457,7 @@ if($&&PageData&&PageData.user) fixer(function(){	// 出错反馈按钮
 		initPanelCall();		// 用户卡片上添加到当前@列表功能支持
 		if(unsafeWindow.rich_postor&&unsafeWindow.rich_postor._editor) {
 			// 以下模块仅在有输入框且允许发言时加载
-			initSpaceKeep();		// 空格显示修复
+			//initSpaceKeep();		// 保留开头的空格
 			initAddWater();			// 灌水+尾巴
 			initCall();			// 召唤增强，召唤列表
 			initFont();		//初始化：高级字体
