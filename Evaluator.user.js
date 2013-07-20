@@ -46,9 +46,9 @@ if(!all.length){
 			obj=obj.lastChild;
 			i.SKJS=i.SKJS?i.SKJS.split(','):[];
 			i.FDJS=i.FDJS?i.FDJS.split(','):[];
-			count+=i.SKJS.length+i.FDJS.length;
 			var n=i.SKJS.length+i.FDJS.length,f=0;
 			var data=[['xkkh',i.XKKH],['kcdm',i.KCDM],['pyxx','']];
+			count+=n;
 			function callback(){
 				obj.innerHTML='('+(++f)+'/'+n+')';
 				if(!--count) b.innerHTML='评优完成';

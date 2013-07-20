@@ -22,7 +22,7 @@ function initImageLoader(callback) {
 // 初始化颜色选择面板
 function initColorPanel() {
 	if(utils.colorInput) return;
-	if(navigator.userAgent.indexOf('Firefox')<0)
+	if(!/(Firefox|OPR)\//.test(navigator.userAgent))
 		return utils.colorInput=function(id,key,def,func){
 			return utils.bindProp($('<input type=color id='+id+' class=ge_rsep>'),'value',key,def,func,['change','keyup']);
 		};

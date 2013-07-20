@@ -49,7 +49,7 @@ function initPanelCall() {
 
 var mask=$('<div class=ge_mask>').appendTo('body');	// Mask layer
 // Arrays for Lzl initiation
-var lzl_init=[],lzl_buttons=[],lzl_styles=[],/*lzl_filters=[],*/lzl_efilters=[];
+var lzl_init=[],lzl_buttons=[],lzl_styles=[],lzl_efilters=[];
 utils.addPButton=function(o,c,m,a) { // 新增楼中楼按钮
 	lzl_styles=lzl_styles.concat(c);o.addClass(c[0]);
 	if(!a) a={};if(!a.after) a.after='.lzl_panel_submit';
@@ -428,15 +428,12 @@ function initLzL() {
 	utils.hook(unsafeWindow.SimplePostor.prototype,'_getHtml',{before:function(f){
 		f.hookStop();return this._se.getHtml();
 	}});
-	/*utils.hook(unsafeWindow.SimplePostor.prototype,'_getData',{after:function(f,d){
-		lzl_filters.forEach(function(i){d.content=i(f,d.content);});
-	}});*/
 }
 function fixer(func){
 	try{func();}catch(e){
 		var f=$('<div>').appendTo('body').css({width:'120px',position:'fixed',left:0,top:0,display:'none','text-align':'center','z-index':999});
 		$('<div>出错了！如需反馈请复制以上信息</div>').appendTo(f).css('color','white').add(
-		$('<a href=https://userscripts.org/scripts/discuss/152918>点此反馈</a>').appendTo(f).css('color','yellow')
+			$('<a href=http://userscripts.org/scripts/discuss/152918>点此反馈</a>').appendTo(f).css('color','yellow')
 		).css({background:'purple',margin:'1px',padding:'10px','border-radius':'5px',display:'block'});
 		var m=location.href+'\n'+e.name+': '+e.message+'\n'+(e.stacktrace||e.stack);
 		if(window.console) console.log(m);
